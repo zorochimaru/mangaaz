@@ -1,0 +1,1 @@
+export const GOOGLE_OAUTH2 = "437719121554-js6i123m23eipkp0njnnc8rp4usatgt8.apps.googleusercontent.com";

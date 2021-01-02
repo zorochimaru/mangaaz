@@ -6,6 +6,7 @@ import {
     StarOutlined
 } from '@ant-design/icons';
 import { Link, Location } from '@reach/router';
+
 const ROUTES = [
     {
         path: '/',
@@ -19,20 +20,25 @@ const ROUTES = [
     }
 ]
 
+
 const Sidebar = () => {
     return (
         <Location>
             {props => {
                 return (
-                    <Menu theme="dark" mode="inline" selectedKeys={[props.location.pathname]}>
+                    <>
                         <Link to='/'><img src={logo} alt="logo" style={styles.logo} /></Link>
-                        {ROUTES.map((route) => {
-                            return (
-                                <Menu.Item icon={route.icon} key={route.path}>
-                                    <Link to={route.path}>{route.pathName}</Link>
-                                </Menu.Item>)
-                        })}
-                    </Menu>
+                        <Menu theme="dark" mode="inline" selectedKeys={[props.location.pathname]}>
+
+                            {ROUTES.map((route) => {
+                                return (
+                                    <Menu.Item icon={route.icon} key={route.path}>
+                                        <Link to={route.path}>{route.pathName}</Link>
+                                    </Menu.Item>)
+                            })}
+
+                        </Menu>
+                    </>
                 );
             }}
         </Location>
