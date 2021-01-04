@@ -9,21 +9,26 @@ import MangaDetails from './containers/MangaDetails/MangaDetails';
 import Reader from './containers/Reader/Reader';
 import Auth from './components/Auth';
 import { UserContext } from './HOC/AuthContext';
+import { PrivateRoute } from './HOC/AuthGuard';
 
 const { Header, Content, Footer, Sider } = Layout;
 
 function App() {
   const [mode, setMode] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({
+    setUser: () => { },
+    user: null
+  });
   const value = useMemo(() => ({ user, setUser }), [user, setUser]);
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider collapsible collapsed={mode} onCollapse={() => setMode(!mode)}>
-        <Sidebar />
-      </Sider>
-      <Layout className="site-layout">
-        <UserContext.Provider value={value}>
+    <UserContext.Provider value={value}>
+      <Layout style={{ minHeight: '100vh' }}>
+        <Sider collapsible collapsed={mode} onCollapse={() => setMode(!mode)}>
+          <Sidebar />
+        </Sider>
+        <Layout className="site-layout">
+
 
           <Header className="site-layout-background" style={{
             padding: 0,
@@ -39,16 +44,17 @@ function App() {
           <Content style={{ margin: '0 16px' }}>
             <Router style={styles.contentWrapper}>
               <Home path="/" />
-              <MostRaited path="most-raited" />
+              <PrivateRoute as={MostRaited} path="most-raited"></PrivateRoute>
               <MangaDetails path="manga-details/:id" />
               <Reader path="reader/:id" />
             </Router>
           </Content>
-        </UserContext.Provider>
 
-        <Footer style={{ textAlign: 'center' }}>Some useless text ©</Footer>
-      </Layout>
-    </Layout >
+
+          <Footer style={{ textAlign: 'center' }}>Some useless text ©</Footer>
+        </Layout>
+      </Layout >
+    </UserContext.Provider>
   );
 }
 const MostRaited: React.FC<RouteComponentProps> = () => (

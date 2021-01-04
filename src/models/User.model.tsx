@@ -1,8 +1,17 @@
-export interface User {
-    name: string,
-    img: string
+export enum Roles {
+    'ADMIN' = 'ADMIN',
+    'MODERATOR' = 'MODERATOR',
+    'READER' = 'READER',
 }
-export interface UserContextType  {
+export interface User {
+    googleId: string,
+    name: string,
+    img: string,
+    email: string,
+    tokenObj: any,
+    role?: Roles,
+}
+export interface UserContextType {
     user: User | null;
-    setUser: (user: User) => void;
+    setUser: (user: User | null) => void;
 }

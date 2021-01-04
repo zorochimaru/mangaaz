@@ -32,14 +32,6 @@ const Home: React.FC<RouteComponentProps> = () => {
         return (
             <>
                 <Title level={2}>Last updated</Title>
-                <Title level={3}>{user.user?.name}</Title>
-                <Card
-
-
-
-                    cover={<img style={{ width: 100, height: 100, borderRadius: '50%' }} alt={user.user?.name} src={user.user?.img} />}
-                >
-                </Card>
                 <Divider orientation="left"></Divider>
 
                 <Row gutter={16}>
