@@ -13,6 +13,12 @@ const ROUTES = [
         public: true
     },
     {
+        path: 'add-chapter',
+        pathName: 'Add chapter',
+        icon: <BookOutlined />,
+        public: true
+    },
+    {
         path: 'user-controller',
         pathName: 'User controller',
         icon: <UserOutlined />,

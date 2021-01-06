@@ -62,7 +62,6 @@ const Sidebar = () => {
             {props => {
                 return (
                     <>
-                    {console.log(props.location.pathname)}
                         <Link to='/'><img src={logo} alt="logo" style={styles.logo} /></Link>
                         <Menu theme="dark" mode="inline" selectedKeys={['/' + props.location.pathname.split('/')[1]]}>
 

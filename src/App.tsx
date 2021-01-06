@@ -15,6 +15,7 @@ import ModeratorPanel from './containers/ModeratorPanel/ModeratorPanel';
 import { Roles } from './models/User.model';
 import NewManga from './containers/AdminPanel/pages/NewManga';
 import UserController from './containers/AdminPanel/pages/UserController';
+import AddChapter from './components/AddChapter';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -51,6 +52,7 @@ function App() {
               <Home path="/" />
               <PrivateRoute as={MostRaited} path="most-raited"></PrivateRoute>
               <PrivateRoute role={Roles.ADMIN} as={AdminPanel} path="admin-panel">
+                <AddChapter path="add-chapter" />
                 <NewManga path="new-manga" />
                 <UserController path="user-controller" />
               </PrivateRoute>
@@ -70,6 +72,7 @@ function App() {
 const MostRaited: React.FC<RouteComponentProps> = () => (
   <div>
     <h2>MostRaited</h2>
+    <img src="https://yadi.sk/i/VyeEtbEali_DQg" alt="some" />
   </div>
 );
 const styles: { [key: string]: CSSProperties } = {
