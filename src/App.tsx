@@ -10,6 +10,11 @@ import Reader from './containers/Reader/Reader';
 import Auth from './components/Auth';
 import { UserContext } from './HOC/AuthContext';
 import { PrivateRoute } from './HOC/AuthGuard';
+import AdminPanel from './containers/AdminPanel/AdminPanel';
+import ModeratorPanel from './containers/ModeratorPanel/ModeratorPanel';
+import { Roles } from './models/User.model';
+import NewManga from './containers/AdminPanel/pages/NewManga';
+import UserController from './containers/AdminPanel/pages/UserController';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -45,6 +50,11 @@ function App() {
             <Router style={styles.contentWrapper}>
               <Home path="/" />
               <PrivateRoute as={MostRaited} path="most-raited"></PrivateRoute>
+              <PrivateRoute role={Roles.ADMIN} as={AdminPanel} path="admin-panel">
+                <NewManga path="new-manga" />
+                <UserController path="user-controller" />
+              </PrivateRoute>
+              <PrivateRoute role={Roles.MODERATOR} as={ModeratorPanel} path="moderator-panel"></PrivateRoute>
               <MangaDetails path="manga-details/:id" />
               <Reader path="reader/:id" />
             </Router>

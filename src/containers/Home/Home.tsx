@@ -1,4 +1,4 @@
-import React, { CSSProperties, useContext, useEffect, useState } from 'react'
+import React, { CSSProperties, useEffect, useState } from 'react'
 import Meta from 'antd/lib/card/Meta';
 import './Home.css';
 import { Card, Col, Divider, Row, Spin } from 'antd';
@@ -6,14 +6,12 @@ import * as db from '../../config/db';
 import { Link, RouteComponentProps } from '@reach/router';
 import Title from 'antd/lib/typography/Title';
 import { Manga } from '../../models/Manga.model';
-import { UserContext } from '../../HOC/AuthContext';
 
 
 const Home: React.FC<RouteComponentProps> = () => {
     const [error, setError] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [mangaList, setMangaList] = useState([]);
-    const user  = useContext(UserContext);
     useEffect(() => {
         db.getDB('manga-library')
             .collection('titles').find({}).asArray().then((mangaList: any) => {

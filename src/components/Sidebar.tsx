@@ -15,13 +15,12 @@ const ROUTES = [
         path: '/',
         pathName: 'Home',
         icon: <HomeOutlined />,
-        public: true
     },
     {
         path: '/most-raited',
         pathName: 'Most Raited',
         icon: <StarOutlined />,
-        public: true
+
     }
 ]
 
@@ -29,13 +28,13 @@ const Sidebar = () => {
     const { user } = useContext(UserContext);
     const [menuItems, setmenuItems] = useState(ROUTES)
     useEffect(() => {
-        setmenuItems(m => m.filter(menu => menu.public));
+        setmenuItems(m => m.filter((menu: any) => !menu.private));
         if (user?.role === Roles.ADMIN) {
             setmenuItems(m => [{
                 path: '/admin-panel',
                 pathName: 'Admin panel',
                 icon: <EditOutlined />,
-                public: false
+                private: true
             }, ...m
             ])
         }
@@ -44,7 +43,7 @@ const Sidebar = () => {
                 path: '/moderator-panel',
                 pathName: 'Moderator panel',
                 icon: <EditOutlined />,
-                public: false
+                private: true
             }, ...m
             ])
         }
@@ -53,7 +52,7 @@ const Sidebar = () => {
                 path: '/reader-panel',
                 pathName: 'Reader panel',
                 icon: <EditOutlined />,
-                public: false
+                private: true
             }, ...m
             ])
         }
@@ -63,8 +62,9 @@ const Sidebar = () => {
             {props => {
                 return (
                     <>
+                    {console.log(props.location.pathname)}
                         <Link to='/'><img src={logo} alt="logo" style={styles.logo} /></Link>
-                        <Menu theme="dark" mode="inline" selectedKeys={[props.location.pathname]}>
+                        <Menu theme="dark" mode="inline" selectedKeys={['/' + props.location.pathname.split('/')[1]]}>
 
                             {menuItems.map((route) => {
                                 return (
