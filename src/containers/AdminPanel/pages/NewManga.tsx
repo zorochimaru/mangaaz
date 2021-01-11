@@ -1,7 +1,6 @@
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons"
 import { RouteComponentProps } from "@reach/router"
-import { message, Upload, Form, Input, Button, Select, Row, Col, notification } from "antd"
-import ImgCrop from 'antd-img-crop'
+import { message, Form, Input, Button, Select, Row, Col, notification } from "antd"
 import TextArea from "antd/lib/input/TextArea";
 import { Option } from "antd/lib/mentions";
 import { BSON } from "mongodb-stitch-browser-sdk";
@@ -16,9 +15,9 @@ const tailLayout = {
   wrapperCol: { offset: 16, span: 12 },
 };
 const NewManga: React.FC<RouteComponentProps | any> = () => {
-  const [manga, setManga] = useState<any>(null);
-  const [errors, setErrors] = useState<any>([]);
-  const [loading, setLoading] = useState(false);
+
+
+  const [, setLoading] = useState(false);
   const [coverLoading, setCoverLoading] = useState(false);
   const [coverUrl, setCoverUrl] = useState<string>('');
   const [genresLibrary, setGenresLibrary] = useState<any[]>([]);
@@ -48,17 +47,7 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
     });
 
   }
-  function beforeUpload(file) {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-    if (!isJpgOrPng) {
-      message.error('You can only upload JPG/PNG file!');
-    }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error('Image must smaller than 2MB!');
-    }
-    return isJpgOrPng && isLt2M;
-  }
+
   const handleSearch = (value: string) => {
     if (value) {
       setLoading(true);
@@ -119,8 +108,7 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
         });
       }).catch((error) => {
 
-        console.log(error);
-        error.map((error: any) => {
+        error.tap((error: any) => {
           notification['error']({
             placement: 'bottomRight',
             message: error.name.join(', '),
@@ -131,8 +119,7 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
   };
 
   const onFinishFailed = (errorInfo: any) => {
-    console.log('Failed:', errorInfo);
-    errorInfo.errorFields.map((error: any) => {
+    errorInfo.errorFields.tap((error: any) => {
       notification['error']({
         placement: 'bottomRight',
         message: error.name.join(', '),
@@ -143,13 +130,7 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
 
 
   };
-  const normFile = (e: any) => {
-    console.log('Upload event:', e);
-    if (Array.isArray(e)) {
-      return e;
-    }
-    return e && e.fileList;
-  };
+
   return (
     <div>
       <Form
