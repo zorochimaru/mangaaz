@@ -45,7 +45,7 @@ const Home: React.FC<RouteComponentProps> = () => {
                                         style={styles.card}
                                         cover={<img style={styles.cardImage} alt={manga.title} src={manga.coverUrl} />}
                                     >
-                                        <Meta title={manga.title} description={manga.genre.join(', ')} />
+                                        <Meta title={manga.title} description={manga.genres.join(', ')} />
                                     </Card>
                                 </Link>
 

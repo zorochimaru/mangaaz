@@ -45,7 +45,7 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
                     <Title level={3}>{manga?.title}</Title>
                     <Title level={5}>Author: {manga?.author}</Title>
                     <Space direction="vertical">
-                        <Text code>{manga?.genre.join(', ')}</Text>
+                        <Text code>{manga?.genres.join(', ')}</Text>
                         <Text>{manga?.description}</Text>
                     </Space>
                 </Col>
