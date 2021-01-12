@@ -6,7 +6,13 @@ import * as db from '../../config/db';
 import { Link, RouteComponentProps } from '@reach/router';
 import Title from 'antd/lib/typography/Title';
 import { Manga } from '../../models/Manga.model';
-
+/*
+TODOS
+////////////////////////////////
+Sort by updated chapters
+////////////////////////////////
+Make 'hot' sign
+*/
 
 const Home: React.FC<RouteComponentProps> = () => {
     const [error, setError] = useState(null);
@@ -14,7 +20,7 @@ const Home: React.FC<RouteComponentProps> = () => {
     const [mangaList, setMangaList] = useState([]);
     useEffect(() => {
         db.getDB('manga-library')
-            .collection('titles').find({}).asArray().then((mangaList: any) => {
+            .collection('titles').find({}, { limit: 4 }).asArray().then((mangaList: any) => {
                 setIsLoaded(true);
                 setMangaList(mangaList)
             }).catch(err =>

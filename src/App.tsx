@@ -15,7 +15,18 @@ import ModeratorPanel from './containers/ModeratorPanel/ModeratorPanel';
 import { Roles } from './models/User.model';
 import NewManga from './containers/AdminPanel/pages/NewManga';
 import UserController from './containers/AdminPanel/pages/UserController';
-import AddChapter from './components/AddChapter';
+import ChapterController from './components/ChapterController';
+
+/*
+TODOS
+////////////////////////////////
+Make reader page
+Make Most Raited page separate
+Add about page
+Change logo
+////////////////////////////////
+*/
+
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -52,7 +63,7 @@ function App() {
               <Home path="/" />
               <PrivateRoute as={MostRaited} path="most-raited"></PrivateRoute>
               <PrivateRoute role={Roles.ADMIN} as={AdminPanel} path="admin-panel">
-                <AddChapter path="add-chapter" />
+                <ChapterController path="chapter-controller" />
                 <NewManga path="new-manga" />
                 <UserController path="user-controller" />
               </PrivateRoute>

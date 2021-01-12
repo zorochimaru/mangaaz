@@ -8,6 +8,16 @@ import Title from 'antd/lib/typography/Title';
 import Text from 'antd/lib/typography/Text';
 import './MangaDetails.css';
 
+/*
+TODOS 
+////////////////////////////////////////////////////////////////
+Click on 'Read now' button go to first chapter
+Click on cover image go to last chapter
+////////////////////////////////////////////////////////////////
+Click on tag go to search page with same tag (Make search page)
+Make rating sistem
+Make comments section
+*/
 const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
     const [error, setError] = useState(null);
     const [isLoaded, setIsLoaded] = useState<boolean>(false);

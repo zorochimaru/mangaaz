@@ -3,10 +3,18 @@ import { RouteComponentProps } from "@reach/router"
 import { message, Form, Input, Button, Select, Row, Col, notification } from "antd"
 import TextArea from "antd/lib/input/TextArea";
 import { Option } from "antd/lib/mentions";
+import imageCompression from "browser-image-compression";
 import { BSON } from "mongodb-stitch-browser-sdk";
-import React, { useRef, useState } from "react";
+import React, { CSSProperties, useRef, useState } from "react";
 import * as db from '../../../config/db';
 import { Manga } from "../../../models/Manga.model";
+/* 
+TODOS
+////////////////////////////////
+Add genre function (_id/value - standart will be lowercase)
+
+////////////////////////////////
+*/
 const layout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 12 },
@@ -14,18 +22,23 @@ const layout = {
 const tailLayout = {
   wrapperCol: { offset: 16, span: 12 },
 };
+
 const NewManga: React.FC<RouteComponentProps | any> = () => {
-
-
-  const [, setLoading] = useState(false);
   const [coverLoading, setCoverLoading] = useState(false);
   const [coverUrl, setCoverUrl] = useState<string>('');
   const [genresLibrary, setGenresLibrary] = useState<any[]>([]);
   const [main] = Form.useForm();
   const inputFileRef = useRef<any>(null);
 
+  const uploadButton = (
+    <div style={styles.addCoverButton}
+      onClick={handleBtnClick}>
+      {coverLoading ? <LoadingOutlined /> : <PlusOutlined />}
+      <div style={{ marginTop: 8 }}>Upload cover</div>
+    </div>
+  );
 
-  const handleBtnClick = () => {
+  function handleBtnClick() {
     inputFileRef.current && inputFileRef.current.click();
   }
 
@@ -35,28 +48,36 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
       reader.addEventListener('load', () => {
         resolve(reader.result);
       });
+      reader.addEventListener('error', () => {
+        reject(reader.result);
+      });
       reader.readAsDataURL(img);
     })
   }
-  const handleCoverChange = (info: any) => {
 
+  const handleCoverChange = (event: any) => {
+    const imageFile = event.target.files[0];
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true
+    }
     setCoverLoading(true);
-    getBase64(info.target.files[0]).then((stringImg) => {
-      setCoverUrl(stringImg);
-      setCoverLoading(false);
-    });
-
+    imageCompression(imageFile, options).then((compressedImage) => {
+      getBase64(compressedImage).then((stringImg) => {
+        setCoverUrl(stringImg);
+        setCoverLoading(false);
+      }).catch((err) => { Error(err) });
+    })
   }
 
   const handleSearch = (value: string) => {
+    // TODO: maybe add input for adding genre
     if (value) {
-      setLoading(true);
       db.getDB('option-library')
-        .collection('genres').find({ 'value': { $regex: `.*${value}.*` } }).asArray().then((mangaList: any) => {
-          setLoading(false);
+        .collection('genres').find({ 'value': new RegExp(value, 'i') }).asArray().then((mangaList: any) => {
           setGenresLibrary(mangaList)
         }).catch((err: any) => {
-          setLoading(false);
           console.log(err);
         }
         )
@@ -64,26 +85,11 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
       setGenresLibrary([]);
     }
   };
-  const uploadButton = (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      cursor: 'pointer',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: 200,
-      height: 300,
-      objectFit: 'cover',
-      border: '4px solid #fff',
-      boxShadow: '3px 6px 20px -7px rgba(0,0,0,0.75)'
-    }} onClick={handleBtnClick}>
-      {coverLoading ? <LoadingOutlined /> : <PlusOutlined />}
-      <div style={{ marginTop: 8 }}>Upload cover</div>
-    </div>
-  );
+
   const onFinish = (values: any) => {
-
-
+    // set loading
+    const hide = message.loading('Action in progress..', 0);
+    // create object
     const newManga: Manga = {
       _id: new BSON.ObjectId(),
       author: values.author,
@@ -92,42 +98,37 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
       genres: values.genres,
       title: values.title
     }
-
-    const hide = message.loading('Action in progress..', 0);
-
-
-
+    // save to DB
     db.getDB('manga-library')
-      .collection('titles').insertOne(newManga).finally(() => {
-        setTimeout(hide, 0);
+      .collection('titles').insertOne(newManga).then(() => {
         notification['success']({
           message: 'Success',
           placement: 'bottomRight',
           description:
             'Manga added!',
         });
-      }).catch((error) => {
-
-        error.tap((error: any) => {
-          notification['error']({
-            placement: 'bottomRight',
-            message: error.name.join(', '),
-            description: error.errors.join(', '),
-          });
+        main.resetFields();
+        setCoverUrl('');
+      }).finally(() => setTimeout(hide, 0)).catch((error) => {
+        notification['error']({
+          placement: 'bottomRight',
+          message: error.errorCodeName,
+          description: error.message,
         });
+
       });
   };
 
+
   const onFinishFailed = (errorInfo: any) => {
-    errorInfo.errorFields.tap((error: any) => {
+    
+    errorInfo.errorFields.forEach((error: any) => {
       notification['error']({
         placement: 'bottomRight',
         message: error.name.join(', '),
         description: error.errors.join(', '),
       });
     });
-
-
 
   };
 
@@ -138,7 +139,6 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
         {...layout}
         style={{ width: '100%' }}
         name="basic"
-
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
       >
@@ -217,19 +217,26 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
                 hidden
               />
             </Form.Item>
-
-
-
-
-
           </Col>
         </Row>
       </Form>
-
-
-
     </div>
   )
+}
+
+const styles: { [key: string]: CSSProperties } = {
+  addCoverButton: {
+    display: 'flex',
+    flexDirection: 'column',
+    cursor: 'pointer',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 200,
+    height: 300,
+    objectFit: 'cover',
+    border: '4px solid #fff',
+    boxShadow: '3px 6px 20px -7px rgba(0,0,0,0.75)'
+  }
 }
 
 export default NewManga

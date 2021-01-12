@@ -1,9 +1,17 @@
-import { BookOutlined, UserOutlined } from "@ant-design/icons";
+import { BookOutlined, DiffOutlined, UserOutlined } from "@ant-design/icons";
 import { Link, Location } from "@reach/router";
 import { Divider, Menu } from "antd"
 import Title from "antd/lib/typography/Title"
 import React, { useState } from "react";
+/*
+TODOS
+////////////////////////////////
+Show confirm dialog before delete
+Make user controller
+Make delete manga function ???
+////////////////////////////////
 
+*/
 
 const ROUTES = [
     {
@@ -13,9 +21,9 @@ const ROUTES = [
         public: true
     },
     {
-        path: 'add-chapter',
-        pathName: 'Add chapter',
-        icon: <BookOutlined />,
+        path: 'chapter-controller',
+        pathName: 'Chapter controller',
+        icon: <DiffOutlined />,
         public: true
     },
     {

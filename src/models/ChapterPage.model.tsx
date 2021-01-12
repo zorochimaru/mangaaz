@@ -1,5 +1,5 @@
 export interface ChapterPage {
-    id: string,
+    imgId: string,
     title: string,
     thumbnail: string,
     url: string,
