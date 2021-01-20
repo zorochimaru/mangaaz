@@ -1,7 +1,6 @@
-import { RemoteMongoClient, Stitch } from 'mongodb-stitch-browser-sdk';
+import * as Realm from "realm-web";
+export const RealmApp = new Realm.App("manga-rlmtr");
 
-const client = Stitch.initializeDefaultAppClient('manga-rlmtr');
-
-export function getDB(name: any) {
-    return client.getServiceClient(RemoteMongoClient.factory, 'mongodb-atlas').db(name);
+export function getDB(name: string) {
+    return RealmApp.currentUser?.mongoClient("mongodb-atlas").db(name)!;
 }

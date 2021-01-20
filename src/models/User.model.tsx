@@ -4,12 +4,12 @@ export enum Roles {
     'READER' = 'READER',
 }
 export interface User {
-    googleId: string,
+    id: string,
     name: string,
     img: string,
     email: string,
     tokenObj: any,
-    role?: Roles,
+    role: any | Roles ,
 }
 export interface UserContextType {
     user: User | null;

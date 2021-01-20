@@ -1,13 +1,14 @@
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons"
 import { RouteComponentProps } from "@reach/router"
-import { message, Form, Input, Button, Select, Row, Col, notification } from "antd"
+import { message, Form, Input, Button, Select, Row, Col, notification, Divider, Empty } from "antd"
 import TextArea from "antd/lib/input/TextArea";
 import { Option } from "antd/lib/mentions";
 import imageCompression from "browser-image-compression";
-import { BSON } from "mongodb-stitch-browser-sdk";
 import React, { CSSProperties, useRef, useState } from "react";
+import { BSON } from "realm-web";
 import * as db from '../../../config/db';
 import { Manga } from "../../../models/Manga.model";
+
 /* 
 TODOS
 ////////////////////////////////
@@ -26,9 +27,11 @@ const tailLayout = {
 const NewManga: React.FC<RouteComponentProps | any> = () => {
   const [coverLoading, setCoverLoading] = useState(false);
   const [coverUrl, setCoverUrl] = useState<string>('');
-  const [genresLibrary, setGenresLibrary] = useState<any[]>([]);
+  const [genresList, setGenresList] = useState<any[]>([]);
+  const [newGenreName, setNewGenreName] = useState<string>('');
   const [main] = Form.useForm();
-  const inputFileRef = useRef<any>(null);
+  const inputFileRef = useRef<HTMLInputElement>(null);
+
 
   const uploadButton = (
     <div style={styles.addCoverButton}
@@ -41,6 +44,8 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
   function handleBtnClick() {
     inputFileRef.current && inputFileRef.current.click();
   }
+
+
 
   function getBase64(img: any) {
     return new Promise<any>((resolve, reject) => {
@@ -55,6 +60,27 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
     })
   }
 
+  const addNewGenreName = () => {
+    if (!genresList.some(genre => genre.value.toLocaleLowerCase() === newGenreName?.toLocaleLowerCase())) {
+      const hide = message.loading('Adding new genre to library...', 0);
+      db.getDB('options-library')
+        ?.collection('genres').insertOne({ _id: new BSON.ObjectId(), value: newGenreName?.toLocaleLowerCase() }).finally(() => {
+          setTimeout(hide, 0)
+        })
+        .then(() => {
+          handleSearch(newGenreName);
+          setNewGenreName('');
+        }).catch((err) => {
+          notification['error']({
+            placement: 'bottomRight',
+            message: err.errorCodeName,
+            description: err.message,
+          });
+        })
+
+    }
+  }
+
   const handleCoverChange = (event: any) => {
     const imageFile = event.target.files[0];
     const options = {
@@ -67,22 +93,32 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
       getBase64(compressedImage).then((stringImg) => {
         setCoverUrl(stringImg);
         setCoverLoading(false);
-      }).catch((err) => { Error(err) });
+      }).catch((err) => {
+        notification['error']({
+          placement: 'bottomRight',
+          message: err.errorCodeName,
+          description: err.message,
+        });
+      });
     })
   }
 
-  const handleSearch = (value: string) => {
+  function handleSearch(value: string) {
     // TODO: maybe add input for adding genre
     if (value) {
-      db.getDB('option-library')
-        .collection('genres').find({ 'value': new RegExp(value, 'i') }).asArray().then((mangaList: any) => {
-          setGenresLibrary(mangaList)
+      db.getDB('options-library')
+        ?.collection('genres').find({ 'value': new RegExp(value, 'i') }).then((genres: any) => {
+          setGenresList(genres)
         }).catch((err: any) => {
-          console.log(err);
+          notification['error']({
+            placement: 'bottomRight',
+            message: err.errorCodeName,
+            description: err.message,
+          });
         }
         )
     } else {
-      setGenresLibrary([]);
+      setGenresList([]);
     }
   };
 
@@ -96,11 +132,12 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
       coverUrl: coverUrl,
       description: values.description,
       genres: values.genres,
-      title: values.title
-    }
+      title: values.title,
+      ownerId: db.RealmApp.currentUser?.customData.id
+    };
     // save to DB
     db.getDB('manga-library')
-      .collection('titles').insertOne(newManga).then(() => {
+      ?.collection('titles').insertOne(newManga).then(() => {
         notification['success']({
           message: 'Success',
           placement: 'bottomRight',
@@ -116,112 +153,122 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
           description: error.message,
         });
 
-      });
-  };
+  });
+};
 
 
-  const onFinishFailed = (errorInfo: any) => {
-    
-    errorInfo.errorFields.forEach((error: any) => {
-      notification['error']({
-        placement: 'bottomRight',
-        message: error.name.join(', '),
-        description: error.errors.join(', '),
-      });
+const onFinishFailed = (errorInfo: any) => {
+
+  errorInfo.errorFields.forEach((error: any) => {
+    notification['error']({
+      placement: 'bottomRight',
+      message: error.name.join(', '),
+      description: error.errors.join(', '),
     });
+  });
 
-  };
+};
 
-  return (
-    <div>
-      <Form
-        form={main}
-        {...layout}
-        style={{ width: '100%' }}
-        name="basic"
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-      >
-        <Row style={{ marginTop: 20 }}>
-          <Col span={16}>
 
-            <Form.Item
-              label="Title"
-              name="title"
-              rules={[{ required: true, message: 'Please input title!' }]}
+return (
+  <div>
+    <Form
+      form={main}
+      {...layout}
+      style={{ width: '100%' }}
+      name="basic"
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+    >
+      <Row style={{ marginTop: 20 }}>
+        <Col span={16}>
+
+          <Form.Item
+            label="Title"
+            name="title"
+            rules={[{ required: true, message: 'Please input title!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Author"
+            name="author"
+            rules={[{ required: true, message: 'Please input author name!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Genres"
+            name="genres"
+            rules={[{ required: true, message: 'Please input genres!' }]}
+          >
+            <Select
+              showSearch
+              filterOption={false}
+              notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+              onSearch={handleSearch}
+              mode="multiple"
+              allowClear
+              style={{ width: '100%' }}
+              dropdownRender={menu => (
+                <div>
+                  {menu}
+                  <Divider style={{ margin: '4px 0' }} />
+                  <div style={{ display: 'flex', flexWrap: 'nowrap', padding: 8 }}>
+                    <Input style={{ flex: 'auto' }} type="text" value={newGenreName} onChange={(e) => setNewGenreName(e.target.value)} />
+                    <Button type="link" disabled={!newGenreName} onClick={addNewGenreName}><PlusOutlined />Add genre</Button>
+                  </div>
+                </div>
+              )}
             >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Author"
-              name="author"
-              rules={[{ required: true, message: 'Please input author name!' }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Genres"
-              name="genres"
-              rules={[{ required: true, message: 'Please input genres!' }]}
-            >
-              <Select
-                showSearch
-                filterOption={false}
-                notFoundContent={null}
-                onSearch={handleSearch}
-                mode="multiple"
-                allowClear
+              {genresList.map(genre => (
+                <Option key={genre.value} >{genre.value}</Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="Description"
+            name="description"
+            rules={[{ required: true, message: 'Please input description!' }]}
+          >
+            <TextArea rows={4} />
+          </Form.Item>
 
-                style={{ width: '100%' }}
-              >
-                {genresLibrary.map(genre => (
-                  <Option key={genre.value} >{genre.value}</Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item
-              label="Description"
-              name="description"
-              rules={[{ required: true, message: 'Please input description!' }]}
-            >
-              <TextArea rows={4} />
-            </Form.Item>
-
-            <Form.Item {...tailLayout}>
-              <Button type="primary" htmlType="submit">
-                Submit
+          <Form.Item {...tailLayout}>
+            <Button type="primary" htmlType="submit">
+              Submit
               </Button>
-            </Form.Item>
+          </Form.Item>
 
-          </Col>
-          <Col span={8}>
-            {coverUrl ? <img src={coverUrl}
-              onClick={handleBtnClick}
-              alt="cover"
-              style={{
-                height: 300,
-                objectFit: 'cover',
-                border: '4px solid #fff',
-                boxShadow: '3px 6px 20px -7px rgba(0,0,0,0.75)'
-              }} /> : uploadButton}
+        </Col>
+        <Col span={8}>
+          {coverUrl ? <img src={coverUrl}
+            onClick={handleBtnClick}
+            alt="cover"
+            style={{
+              height: 300,
+              objectFit: 'cover',
+              border: '4px solid #fff',
+              boxShadow: '3px 6px 20px -7px rgba(0,0,0,0.75)'
+            }} /> : uploadButton}
 
-            <Form.Item
+          <Form.Item
 
-              name="coverUrl"
-              rules={[{ required: true, message: 'Please upload cover!' }]} >
+            name="coverUrl"
+            rules={[{ required: true, message: 'Please upload cover!' }]} >
 
-              <input
-                type="file"
-                ref={inputFileRef}
-                onChange={handleCoverChange}
-                hidden
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-      </Form>
-    </div>
-  )
+            <input
+              type="file"
+              ref={inputFileRef}
+              onChange={handleCoverChange}
+              hidden
+            />
+          </Form.Item>
+        </Col>
+      </Row>
+    </Form>
+  </div>
+)
 }
 
 const styles: { [key: string]: CSSProperties } = {

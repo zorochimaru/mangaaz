@@ -3,10 +3,10 @@ import { Button, Col, Divider, Rate, Row, Space, Spin } from 'antd';
 import React, { CSSProperties, useEffect, useState } from 'react'
 import * as db from '../../config/db';
 import { Manga } from '../../models/Manga.model';
-import { BSON } from 'mongodb-stitch-browser-sdk';
 import Title from 'antd/lib/typography/Title';
 import Text from 'antd/lib/typography/Text';
 import './MangaDetails.css';
+import { BSON } from 'realm-web';
 
 /*
 TODOS 

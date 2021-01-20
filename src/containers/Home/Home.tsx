@@ -1,11 +1,12 @@
-import React, { CSSProperties, useEffect, useState } from 'react'
+import React, { CSSProperties, useContext, useEffect, useState } from 'react'
 import Meta from 'antd/lib/card/Meta';
 import './Home.css';
-import { Card, Col, Divider, Row, Spin } from 'antd';
+import { Card, Col, Divider, notification, Row, Spin } from 'antd';
 import * as db from '../../config/db';
 import { Link, RouteComponentProps } from '@reach/router';
 import Title from 'antd/lib/typography/Title';
 import { Manga } from '../../models/Manga.model';
+import { UserContext } from '../../HOC/AuthContext';
 /*
 TODOS
 ////////////////////////////////
@@ -15,22 +16,26 @@ Make 'hot' sign
 */
 
 const Home: React.FC<RouteComponentProps> = () => {
-    const [error, setError] = useState(null);
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [mangaList, setMangaList] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [mangaList, setMangaList] = useState<any[]>([]);
+    const { user } = useContext(UserContext);
     useEffect(() => {
-        db.getDB('manga-library')
-            .collection('titles').find({}, { limit: 4 }).asArray().then((mangaList: any) => {
-                setIsLoaded(true);
-                setMangaList(mangaList)
-            }).catch(err =>
-                setError(err)
-            )
-    }, [])
+        if (user) {
+            db.getDB('manga-library')
+                .collection('titles').find({}, { limit: 4 }).then((mangaList: any[]) => {
+                    setMangaList(mangaList);
+                }).finally(() => setLoading(false)).catch(err =>
+                    notification['error']({
+                        placement: 'bottomRight',
+                        message: err.errorCodeName,
+                        description: err.message,
+                    })
+                )
+        }
+    }, [user])
 
-    if (error) {
-        return <div>Ошибка: {error}</div>;
-    } else if (!isLoaded) {
+
+    if (loading) {
         return <div><Spin size="large" /></div>;
     } else {
         return (
@@ -42,9 +47,9 @@ const Home: React.FC<RouteComponentProps> = () => {
 
                     {mangaList.map((manga: Manga) => {
                         return (
-                            <Col span={6} key={manga._id} >
+                            <Col span={6} key={manga._id.toHexString()} >
 
-                                <Link to={'manga-details/' + manga._id}>
+                                <Link to={'manga-details/' + manga._id.toHexString()}>
                                     <Card
 
                                         hoverable

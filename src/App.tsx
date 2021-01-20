@@ -15,7 +15,8 @@ import ModeratorPanel from './containers/ModeratorPanel/ModeratorPanel';
 import { Roles } from './models/User.model';
 import NewManga from './containers/AdminPanel/pages/NewManga';
 import UserController from './containers/AdminPanel/pages/UserController';
-import ChapterController from './components/ChapterController';
+import ChapterController from './containers/AdminPanel/components/ChapterController';
+ 
 
 /*
 TODOS
@@ -32,12 +33,12 @@ const { Header, Content, Footer, Sider } = Layout;
 
 function App() {
   const [mode, setMode] = useState(false);
-  const [user, setUser] = useState({
-    setUser: () => { },
-    user: null
-  });
+  const [user, setUser] = useState<any>(null);
   const value = useMemo(() => ({ user, setUser }), [user, setUser]);
 
+
+
+ 
   return (
     <UserContext.Provider value={value}>
       <Layout style={{ minHeight: '100vh' }}>
@@ -83,7 +84,6 @@ function App() {
 const MostRaited: React.FC<RouteComponentProps> = () => (
   <div>
     <h2>MostRaited</h2>
-    <img src="https://yadi.sk/i/VyeEtbEali_DQg" alt="some" />
   </div>
 );
 const styles: { [key: string]: CSSProperties } = {

@@ -4,9 +4,9 @@ import { Upload, Button, Image, Select, InputNumber, Row, Col, notification, mes
 import { Option } from "antd/lib/mentions";
 import React, { useState } from "react"
 import * as XLSX from 'xlsx';
-import { ChapterPage } from "../models/ChapterPage.model";
-import * as db from '../config/db';
-import { BSON } from "mongodb-stitch-browser-sdk";
+import { ChapterPage } from "../../../models/ChapterPage.model";
+import * as db from '../../../config/db';
+import { BSON } from "realm-web";
 
 const ChapterController: React.FC<RouteComponentProps | any> = () => {
     const [pagesData, setPagesData] = useState<ChapterPage[]>([]);
@@ -95,7 +95,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
         setLoading(true);
         if (value) {
             db.getDB('manga-library')
-                .collection('titles').find({ 'title': new RegExp(value, 'i') }).asArray().then((mangaList: any) => {
+                ?.collection('titles').find({ 'title': new RegExp(value, 'i') }).then((mangaList: any) => {
                     setLoading(false);
                     setMangaList(mangaList)
                 }).catch((error: any) =>
@@ -124,7 +124,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
             pages: pagesData,
         };
         db.getDB('manga-library')
-            .collection('chapters').insertOne(newChapter).then(() => {
+            ?.collection('chapters').insertOne(newChapter).then(() => {
                 notification['success']({
                     message: 'Success',
                     placement: 'bottomRight',
@@ -145,7 +145,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
     const handleSearchChapter = () => {
         const hide = message.loading('Action in progress..', 0);
         db.getDB('manga-library')
-            .collection('chapters').findOne({ mangaId: mangaId, number: сhapterNumber }).then((chapter: any) => {
+            ?.collection('chapters').findOne({ mangaId: mangaId, number: сhapterNumber }).then((chapter: any) => {
                 setPagesData(chapter.pages);
                 setExistInDb(true);
             }).finally(() => setTimeout(hide, 0)).catch(error => {
@@ -162,7 +162,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
         const hide = message.loading('Action in progress..', 0);
 
         db.getDB('manga-library')
-            .collection('chapters').deleteOne({ mangaId: mangaId, number: сhapterNumber }).then(() => {
+            ?.collection('chapters').deleteOne({ mangaId: mangaId, number: сhapterNumber }).then(() => {
                 notification['success']({
                     message: 'Success',
                     placement: 'bottomRight',
