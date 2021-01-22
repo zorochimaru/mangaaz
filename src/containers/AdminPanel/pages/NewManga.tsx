@@ -1,10 +1,11 @@
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons"
 import { RouteComponentProps } from "@reach/router"
-import { message, Form, Input, Button, Select, Row, Col, notification, Divider, Empty } from "antd"
+import { message, Form, Input, Button, Select, Row, Col, notification, Divider, Empty, Upload } from "antd"
+import ImgCrop from "antd-img-crop";
 import TextArea from "antd/lib/input/TextArea";
 import { Option } from "antd/lib/mentions";
 import imageCompression from "browser-image-compression";
-import React, { CSSProperties, useRef, useState } from "react";
+import React, { CSSProperties, useState } from "react";
 import { BSON } from "realm-web";
 import * as db from '../../../config/db';
 import { Manga } from "../../../models/Manga.model";
@@ -26,24 +27,24 @@ const tailLayout = {
 
 const NewManga: React.FC<RouteComponentProps | any> = () => {
   const [coverLoading, setCoverLoading] = useState(false);
+  const [fileList, setFileList] = useState<any>([]);
   const [coverUrl, setCoverUrl] = useState<string>('');
   const [genresList, setGenresList] = useState<any[]>([]);
   const [newGenreName, setNewGenreName] = useState<string>('');
   const [main] = Form.useForm();
-  const inputFileRef = useRef<HTMLInputElement>(null);
+
 
 
   const uploadButton = (
     <div style={styles.addCoverButton}
-      onClick={handleBtnClick}>
+    // onClick={handleBtnClick}
+    >
       {coverLoading ? <LoadingOutlined /> : <PlusOutlined />}
       <div style={{ marginTop: 8 }}>Upload cover</div>
     </div>
   );
 
-  function handleBtnClick() {
-    inputFileRef.current && inputFileRef.current.click();
-  }
+
 
 
 
@@ -80,13 +81,20 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
 
     }
   }
-
-  const handleCoverChange = (event: any) => {
-    const imageFile = event.target.files[0];
+  const dummyRequest: any = ({ file, onSuccess }) => {
+    setTimeout(() => {
+      onSuccess("ok");
+    }, 0);
+  };
+  const handleCoverChange = (imageFile: any) => {
     const options = {
       maxSizeMB: 1,
       maxWidthOrHeight: 1920,
       useWebWorker: true
+    }
+    if (!imageFile.type.includes('image/')) {
+      message.error(`${imageFile.name} is not a image file`);
+      return
     }
     setCoverLoading(true);
     imageCompression(imageFile, options).then((compressedImage) => {
@@ -104,7 +112,6 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
   }
 
   function handleSearch(value: string) {
-    // TODO: maybe add input for adding genre
     if (value) {
       db.getDB('options-library')
         ?.collection('genres').find({ 'value': new RegExp(value, 'i') }).then((genres: any) => {
@@ -123,6 +130,15 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
   };
 
   const onFinish = (values: any) => {
+    if (!coverUrl) {
+
+      notification['error']({
+        placement: 'bottomRight',
+        message: 'Ooops',
+        description: 'Cover is requied',
+      });
+      return
+    }
     // set loading
     const hide = message.loading('Action in progress..', 0);
     // create object
@@ -153,122 +169,126 @@ const NewManga: React.FC<RouteComponentProps | any> = () => {
           description: error.message,
         });
 
-  });
-};
+      });
+  };
 
 
-const onFinishFailed = (errorInfo: any) => {
+  const onFinishFailed = (errorInfo: any) => {
 
-  errorInfo.errorFields.forEach((error: any) => {
-    notification['error']({
-      placement: 'bottomRight',
-      message: error.name.join(', '),
-      description: error.errors.join(', '),
+    errorInfo.errorFields.forEach((error: any) => {
+      notification['error']({
+        placement: 'bottomRight',
+        message: error.name.join(', '),
+        description: error.errors.join(', '),
+      });
     });
-  });
 
-};
+  };
 
+  function handleupload(file) {
+    setFileList([]);
+    handleCoverChange(file);
+    return true
+  }
+  return (
+    <div>
+      <Form
+        form={main}
+        {...layout}
+        style={{ width: '100%' }}
+        name="basic"
+        onFinish={onFinish}
+        onFinishFailed={onFinishFailed}
+      >
+        <Row style={{ marginTop: 20 }}>
+          <Col span={16}>
 
-return (
-  <div>
-    <Form
-      form={main}
-      {...layout}
-      style={{ width: '100%' }}
-      name="basic"
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-    >
-      <Row style={{ marginTop: 20 }}>
-        <Col span={16}>
-
-          <Form.Item
-            label="Title"
-            name="title"
-            rules={[{ required: true, message: 'Please input title!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Author"
-            name="author"
-            rules={[{ required: true, message: 'Please input author name!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Genres"
-            name="genres"
-            rules={[{ required: true, message: 'Please input genres!' }]}
-          >
-            <Select
-              showSearch
-              filterOption={false}
-              notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-              onSearch={handleSearch}
-              mode="multiple"
-              allowClear
-              style={{ width: '100%' }}
-              dropdownRender={menu => (
-                <div>
-                  {menu}
-                  <Divider style={{ margin: '4px 0' }} />
-                  <div style={{ display: 'flex', flexWrap: 'nowrap', padding: 8 }}>
-                    <Input style={{ flex: 'auto' }} type="text" value={newGenreName} onChange={(e) => setNewGenreName(e.target.value)} />
-                    <Button type="link" disabled={!newGenreName} onClick={addNewGenreName}><PlusOutlined />Add genre</Button>
-                  </div>
-                </div>
-              )}
+            <Form.Item
+              label="Title"
+              name="title"
+              rules={[{ required: true, message: 'Please input title!' }]}
             >
-              {genresList.map(genre => (
-                <Option key={genre.value} >{genre.value}</Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="Description"
-            name="description"
-            rules={[{ required: true, message: 'Please input description!' }]}
-          >
-            <TextArea rows={4} />
-          </Form.Item>
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Author"
+              name="author"
+              rules={[{ required: true, message: 'Please input author name!' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Genres"
+              name="genres"
+              rules={[{ required: true, message: 'Please input genres!' }]}
+            >
+              <Select
+                showSearch
+                filterOption={false}
+                notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                onSearch={handleSearch}
+                mode="multiple"
+                allowClear
+                style={{ width: '100%' }}
+                dropdownRender={menu => (
+                  <div>
+                    {menu}
+                    <Divider style={{ margin: '4px 0' }} />
+                    <div style={{ display: 'flex', flexWrap: 'nowrap', padding: 8 }}>
+                      <Input style={{ flex: 'auto' }} type="text" value={newGenreName} onChange={(e) => setNewGenreName(e.target.value)} />
+                      <Button type="link" disabled={!newGenreName} onClick={addNewGenreName}><PlusOutlined />Add genre</Button>
+                    </div>
+                  </div>
+                )}
+              >
+                {genresList.map(genre => (
+                  <Option key={genre.value} >{genre.value}</Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item
+              label="Description"
+              name="description"
+              rules={[{ required: true, message: 'Please input description!' }]}
+            >
+              <TextArea rows={4} />
+            </Form.Item>
 
-          <Form.Item {...tailLayout}>
-            <Button type="primary" htmlType="submit">
-              Submit
+            <Form.Item {...tailLayout}>
+              <Button type="primary" htmlType="submit">
+                Submit
               </Button>
-          </Form.Item>
+            </Form.Item>
 
-        </Col>
-        <Col span={8}>
-          {coverUrl ? <img src={coverUrl}
-            onClick={handleBtnClick}
-            alt="cover"
-            style={{
-              height: 300,
-              objectFit: 'cover',
-              border: '4px solid #fff',
-              boxShadow: '3px 6px 20px -7px rgba(0,0,0,0.75)'
-            }} /> : uploadButton}
+          </Col>
+          <Col span={8}>
 
-          <Form.Item
 
-            name="coverUrl"
-            rules={[{ required: true, message: 'Please upload cover!' }]} >
 
-            <input
-              type="file"
-              ref={inputFileRef}
-              onChange={handleCoverChange}
-              hidden
-            />
-          </Form.Item>
-        </Col>
-      </Row>
-    </Form>
-  </div>
-)
+            <ImgCrop aspect={5 / 7.8}>
+              <Upload
+                fileList={fileList}
+                customRequest={dummyRequest}
+                beforeUpload={(file) => handleupload(file)}
+                style={{ display: "none" }}
+              >
+                {coverUrl ? <img src={coverUrl}
+                  alt="cover"
+                  style={{
+                    cursor: 'pointer',
+                    height: 300,
+                    objectFit: 'cover',
+                    border: '4px solid #fff',
+                    boxShadow: '3px 6px 20px -7px rgba(0,0,0,0.75)'
+                  }} /> : uploadButton}
+
+              </Upload>
+            </ImgCrop>
+          </Col>
+        </Row>
+      </Form>
+    </div >
+  )
 }
 
 const styles: { [key: string]: CSSProperties } = {

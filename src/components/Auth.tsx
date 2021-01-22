@@ -12,9 +12,11 @@ import { BSON } from 'realm-web';
 
 const Auth: React.FC<any> = () => {
     const { user, setUser } = useContext(UserContext);
+    const expiryDate = new Date(new Date().getTime() + user?.tokenObj?.expires_in * 1000);
+
     useEffect(() => {
 
-        if (RealmApp.currentUser) {
+        if (RealmApp.currentUser?.isLoggedIn) {
             // The user is logged in. Add their user object to component state.
             setUser(RealmApp.currentUser.customData);
         } else {
@@ -23,7 +25,7 @@ const Auth: React.FC<any> = () => {
             RealmApp.logIn(credentials).then((user) => setUser(user));
         }
 
-    }, [setUser])
+    }, [setUser,])
 
 
     function loginHandler(data: any) {
@@ -33,9 +35,9 @@ const Auth: React.FC<any> = () => {
             const newUser: User = {
                 id: res.id,
                 role: res.customData?.role ? res.customData?.role : Roles.READER,
-                name: data?.profileObj.name,
-                img: data?.profileObj.imageUrl,
-                email: data?.profileObj.email,
+                name: data?.profileObj?.name,
+                img: data?.profileObj?.imageUrl,
+                email: data?.profileObj?.email,
                 tokenObj: data?.tokenObj,
             };
 
@@ -56,22 +58,21 @@ const Auth: React.FC<any> = () => {
 
     function logoutHandler() {
         setUser(null);
+        RealmApp.currentUser?.logOut();
     }
 
-    const expiryDate = new Date(new Date().getTime() + user?.tokenObj?.expires_in * 1000);
 
     return (
-
-        expiryDate > new Date() ? <GoogleLogout
-            clientId={GOOGLE_OAUTH2}
-            buttonText="Logout"
-            onLogoutSuccess={logoutHandler}
-            render={renderProps => (
-                <Button icon={<GoogleOutlined />} style={styles.login} onClick={renderProps.onClick} disabled={renderProps.disabled}>Logout</Button>
-            )}
-        />
+        RealmApp.currentUser?.isLoggedIn && expiryDate > new Date()
+            ? <GoogleLogout
+                clientId={GOOGLE_OAUTH2}
+                buttonText="Logout"
+                onLogoutSuccess={logoutHandler}
+                render={renderProps => (
+                    <Button icon={<GoogleOutlined />} style={styles.login} onClick={renderProps.onClick} disabled={renderProps.disabled}>Logout</Button>
+                )}
+            />
             : <GoogleLogin
-
                 clientId={GOOGLE_OAUTH2}
                 render={renderProps => (
                     <Button icon={<GoogleOutlined />} style={styles.login} onClick={renderProps.onClick} disabled={renderProps.disabled}>Login</Button>

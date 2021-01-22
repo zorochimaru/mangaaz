@@ -74,7 +74,6 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
     }
 
     const uploadProps = {
-
         multiple: false,
         onRemove: () => {
             setPagesData([]);
@@ -208,8 +207,8 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
                     </Upload>
 
                 </Col>
-                <Col span={3}>
-                    <Button onClick={handleSearchChapter} type="default" disabled={fileList.length !== 0}>Load chapter</Button>
+                <Col offset={1} span={3}>
+                    <Button onClick={handleSearchChapter} type="default" disabled={fileList.length !== 0 || !сhapterNumber || !mangaId}>Load chapter</Button>
                 </Col>
                 <Col span={1}>
                     <Button onClick={handleSubmit} type="primary" disabled={fileList.length === 0}>Save chapter</Button>
@@ -218,9 +217,6 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
                     <Button onClick={handleDeleteChapter} type="primary" danger disabled={!existInDb}>Delete chapter</Button>
                 </Col>
             </Row>
-
-
-
             <Image.PreviewGroup>
                 {pagesData.map((page: any) => {
                     return (
