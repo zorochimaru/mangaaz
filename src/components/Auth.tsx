@@ -8,6 +8,7 @@ import { User, Roles } from '../models/User.model';
 import { GOOGLE_OAUTH2 } from '../types/constants';
 import * as Realm from "realm-web";
 import { BSON } from 'realm-web';
+import Avatar from 'antd/lib/avatar/avatar';
 
 
 const Auth: React.FC<any> = () => {
@@ -64,14 +65,19 @@ const Auth: React.FC<any> = () => {
 
     return (
         RealmApp.currentUser?.isLoggedIn && expiryDate > new Date()
-            ? <GoogleLogout
-                clientId={GOOGLE_OAUTH2}
-                buttonText="Logout"
-                onLogoutSuccess={logoutHandler}
-                render={renderProps => (
-                    <Button icon={<GoogleOutlined />} style={styles.login} onClick={renderProps.onClick} disabled={renderProps.disabled}>Logout</Button>
-                )}
-            />
+            ?
+            <div style={styles.logout}>
+                <Avatar src={RealmApp.currentUser?.customData.img} />
+                <GoogleLogout
+                    clientId={GOOGLE_OAUTH2}
+                    buttonText="Logout"
+                    onLogoutSuccess={logoutHandler}
+                    render={renderProps => (
+                        <Button icon={<GoogleOutlined />} onClick={renderProps.onClick} disabled={renderProps.disabled}>Logout</Button>
+                    )}
+                />
+            </div>
+
             : <GoogleLogin
                 clientId={GOOGLE_OAUTH2}
                 render={renderProps => (
@@ -87,6 +93,13 @@ const styles: { [key: string]: CSSProperties } = {
     login: {
         position: 'absolute',
         right: 20,
+    },
+    logout: {
+        position: 'absolute',
+        right: 20,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10
     }
 }
 export default Auth

@@ -1,8 +1,8 @@
+import React, { useEffect, useState } from "react"
 import { SearchOutlined } from "@ant-design/icons";
 import { RouteComponentProps } from "@reach/router"
-import { Button, Input, message, notification, Select, Space, Table } from "antd";
-import React, { useEffect, useState } from "react"
-import { getDB } from "../../../config/db";
+import { Button, Input, message, notification, Popconfirm, Select, Space, Table } from "antd";
+import { getDB, RealmApp } from "../../../config/db";
 import { Roles } from "../../../models/User.model";
 import Highlighter from "react-highlight-words";
 const roleOptions = [{ value: Roles.ADMIN }, { value: Roles.MODERATOR }, { value: Roles.READER }];
@@ -23,12 +23,7 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
         getDB('auth')?.collection('users').aggregate([{
             "$facet": {
                 "totalData": [
-                    { "$match": searchText ? { email: new RegExp(searchText, 'i') } : {} },
-                    { "$skip": pagination.current > 1 ? ((pagination.current - 1) * pagination.pageSize) : 0 },
-                    { "$limit": pagination.pageSize }
-                ],
-                "matchCount": [
-                    { "$group": { _id: { source: "$source", status: "$status" }, count: { $sum: 1 } } },
+                    { "$limit": 10 }
                 ],
                 "totalCount": [
                     { "$count": "count" }
@@ -38,12 +33,48 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
             setUserList(data[0].totalData);
             setPagination(p => ({
                 ...p,
-                total: data[0].matchCount[0].count
+                total: data[0].totalCount[0].count
             }));
-        }).finally(() => setLoading(false));
+        }).finally(() => setLoading(false)).catch((err) => {
+            notification['error']({
+                placement: 'bottomRight',
+                message: err.errorCodeName,
+                description: err.message,
+            });
+        });
+    }, [])
 
-    }, [pagination.pageSize, pagination.current, searchText])
-
+    function fetchUsers(newPage) {
+        setLoading(true);
+        getDB('auth')?.collection('users').aggregate([{
+            "$facet": {
+                "totalData": [
+                    { "$match": searchText ? { email: new RegExp(searchText, 'i') } : {} },
+                    { "$skip": newPage.current > 1 ? ((newPage.current - 1) * newPage.pageSize) : 0 },
+                    { "$limit": newPage.pageSize }
+                ],
+                "matchCount": [
+                    { "$match": searchText ? { email: new RegExp(searchText, 'i') } : {} },
+                    { "$group": { _id: { source: "$source", status: "$status" }, count: { $sum: 1 } } },
+                ],
+                "totalCount": [
+                    { "$count": "count" }
+                ]
+            }
+        }]).then((data) => {
+            setUserList(data[0].totalData);
+            setPagination({
+                ...newPage,
+                total: data[0].matchCount[0].count
+            });
+        }).finally(() => setLoading(false)).catch((err) => {
+            notification['error']({
+                placement: 'bottomRight',
+                message: err.errorCodeName,
+                description: err.message,
+            });
+        });
+    }
     function handleRoleChange(value: string, user) {
         const hide = message.loading('Action in progress..', 0);
         getDB('auth')?.collection('users').updateOne({ id: user.id }, { $set: { role: value } }).then(() => {
@@ -64,7 +95,7 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
     function handleDeleteUser(user) {
         const hide = message.loading('Action in progress..', 0);
         getDB('auth')?.collection('users').deleteOne({ id: user.id }).then(() => {
-            // fetchUserList(pagination);
+            fetchUsers(pagination);
             notification['success']({
                 message: 'Success',
                 placement: 'bottomRight',
@@ -80,6 +111,7 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
         })
     }
     function handleSearch(selectedKeys, confirm, dataIndex) {
+        fetchUsers(pagination);
         setSearchText(selectedKeys[0]);
         setSearchedColumn(dataIndex);
         confirm();
@@ -87,7 +119,7 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
     function handleReset(clearFilters) {
         clearFilters();
         setSearchText('');
-        // fetchUserList({ ...pagination, current: 1 });
+        fetchUsers({ ...pagination, current: 1 });
     };
     const getColumnSearchProps = (dataIndex) => ({
         filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
@@ -140,6 +172,12 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
                     text
                 ),
     });
+    function checkUser(user) {
+        if (user.id === RealmApp.currentUser?.customData.id) {
+            return true
+        }
+        return false
+    }
     const columns = [
         {
             title: 'Name',
@@ -163,28 +201,27 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
                     defaultValue={text}
                     style={{ width: 200 }}
                     options={roleOptions}
+                    disabled={checkUser(user)}
                 />
-
         },
         {
             title: 'Action',
             key: 'action',
-            render: (_, user) => (
-                <Space size="middle">
-                    <Button onClick={() => handleDeleteUser(user)} type="primary" danger>Delete</Button>
-                </Space>
-            ),
+            render: (_, user: { key: React.Key }) =>
+                userList.length >= 1 ? (
+                    <Popconfirm disabled={checkUser(user)} title="Sure to delete?" onConfirm={() => handleDeleteUser(user)}>
+                        <Button disabled={checkUser(user)} type="primary" danger>Delete</Button>
+                    </Popconfirm>
+                ) : null,
+
+
         },
     ];
 
     return (
         <div>
             <Table onChange={
-                (newPage: any) => setPagination({
-                    ...pagination,
-                    current: newPage.current,
-                    pageSize: newPage.pageSize,
-                })
+                (newPage: any) => fetchUsers(newPage)
             } pagination={pagination}
                 style={{ marginTop: 20 }} loading={loading} columns={columns} dataSource={userList} />
         </div>
