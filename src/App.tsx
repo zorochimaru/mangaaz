@@ -13,7 +13,7 @@ import { PrivateRoute } from './HOC/AuthGuard';
 import AdminPanel from './containers/AdminPanel/AdminPanel';
 import ModeratorPanel from './containers/ModeratorPanel/ModeratorPanel';
 import { Roles } from './models/User.model';
-import NewManga from './containers/AdminPanel/pages/NewManga';
+import MangaController from './containers/AdminPanel/pages/MangaController';
 import UserController from './containers/AdminPanel/pages/UserController';
 import ChapterController from './containers/AdminPanel/components/ChapterController';
  
@@ -65,7 +65,7 @@ function App() {
               <PrivateRoute as={MostRaited} path="most-raited"></PrivateRoute>
               <PrivateRoute role={Roles.ADMIN} as={AdminPanel} path="admin-panel">
                 <ChapterController path="chapter-controller" />
-                <NewManga path="new-manga" />
+                <MangaController path="manga-controller" />
                 <UserController path="user-controller" />
               </PrivateRoute>
               <PrivateRoute role={Roles.MODERATOR} as={ModeratorPanel} path="moderator-panel"></PrivateRoute>

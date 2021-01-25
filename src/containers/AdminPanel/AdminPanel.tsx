@@ -15,8 +15,8 @@ Make delete manga function ???
 
 const ROUTES = [
     {
-        path: 'new-manga',
-        pathName: 'New manga',
+        path: 'manga-controller',
+        pathName: 'Manga controller',
         icon: <BookOutlined />,
         public: true
     },
