@@ -23,9 +23,7 @@ const layout = {
   labelCol: { span: 4 },
   wrapperCol: { span: 18 },
 };
-const tailLayout = {
-  wrapperCol: { offset: 12, span: 12 },
-};
+
 
 const MangaController: React.FC<RouteComponentProps | any> = () => {
   const [coverLoading, setCoverLoading] = useState(false);
@@ -35,12 +33,11 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
   const [newGenreName, setNewGenreName] = useState<string>('');
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const [editItem, setEditItem] = useState<Manga | null>(null);
-  const [deleteList, setDeleteList] = useState<Manga[]>([]);
+  const [searchList, setSearchList] = useState<Manga[]>([]);
   const [main] = Form.useForm();
   const [searchForm] = Form.useForm();
-  const dummyRequest: any = ({ file, onSuccess }) => {
+  const dummyRequest: any = ({ onSuccess }) => {
     setTimeout(() => {
       onSuccess("ok");
     }, 0);
@@ -153,69 +150,64 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
     }
     // set loading
     const hide = message.loading('Action in progress..', 0);
-    //check if exist by name
-    checkIfExist(values.title).then((exist) => {
-      if (!exist) {
-
-        // create object
-        const newManga: Manga = {
-          _id: new BSON.ObjectId(),
-          author: values.author,
-          coverUrl: coverUrl,
-          description: values.description,
-          genres: values.genres,
-          title: values.title,
-          ownerId: db.RealmApp.currentUser?.customData.id
-        };
-        // save to DB
-        db.getDB('manga-library')
-          ?.collection('titles').insertOne(newManga).then(() => {
-            notification['success']({
-              message: 'Success',
-              placement: 'bottomRight',
-              description:
-                'Manga added!',
-            });
-            main.resetFields();
-            setCoverUrl('');
-          }).finally(() => setTimeout(hide, 0)).catch((error) => {
-            notification['error']({
-              placement: 'bottomRight',
-              message: error.errorCodeName,
-              description: error.message,
-            });
-
+    if (!editItem) {
+      // create object
+      const newManga: Manga = {
+        _id: new BSON.ObjectId(),
+        author: values.author,
+        coverUrl: coverUrl,
+        description: values.description,
+        genres: values.genres,
+        title: values.title,
+        ownerId: db.RealmApp.currentUser?.customData.id
+      };
+      // save to DB
+      db.getDB('manga-library')
+        ?.collection('titles').insertOne(newManga).then(() => {
+          notification['success']({
+            message: 'Success',
+            placement: 'bottomRight',
+            description:
+              'Manga added!',
           });
-
-      } else {
-        if (editItem) {
-          db.getDB('manga-library')
-            ?.collection('titles').updateOne({ _id: editItem?._id }, { ...editItem, ...main.getFieldsValue() })
-            .then(() => {
-              notification['success']({
-                message: 'Success',
-                placement: 'bottomRight',
-                description:
-                  'Manga edited!',
-              });
-            })
-            .finally(() => setTimeout(hide, 0)).catch((error) => {
-              notification['error']({
-                placement: 'bottomRight',
-                message: error.errorCodeName,
-                description: error.message,
-              });
-            });
-        } else {
-          setTimeout(hide, 0);
+          main.resetFields();
+          setCoverUrl('');
+        }).finally(() => setTimeout(hide, 0)).catch((error) => {
           notification['error']({
             placement: 'bottomRight',
-            message: 'Error',
-            description: 'Manga with this name already exist!',
+            message: error.errorCodeName,
+            description: error.message,
           });
-        }
-      }
-    });
+
+        });
+
+    }
+    else {
+      db.getDB('manga-library')
+        ?.collection('titles').updateOne({ _id: editItem?._id }, { ...editItem, ...main.getFieldsValue() })
+        .then(() => {
+          notification['success']({
+            message: 'Success',
+            placement: 'bottomRight',
+            description:
+              'Manga edited!',
+          });
+          setEditItem(null);
+          setSearchList([]);
+          main.resetFields();
+          setCoverUrl('');
+          searchForm.resetFields();
+        })
+        .finally(() => setTimeout(hide, 0)).catch((error) => {
+          notification['error']({
+            placement: 'bottomRight',
+            message: error.errorCodeName,
+            description: error.message,
+          });
+        });
+    }
+
+
 
   };
 
@@ -241,7 +233,7 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
       ?.collection('titles')
       .find({ title: new RegExp(values.title, 'i') })
       .then((mangaList: Manga[]) => {
-        setDeleteList(mangaList);
+        setSearchList(mangaList);
       }).finally(() => setSearching(false));
   }
   function handleupload(file) {
@@ -261,7 +253,7 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
           description:
             'Manga deleted!',
         });
-        setDeleteList((list) => list.filter(item => item !== manga));
+        setSearchList((list) => list.filter(item => item !== manga));
       })
       .finally(() => setTimeout(hide, 0))
       .catch((error) => {
@@ -397,7 +389,7 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
       >
 
         <Space direction="vertical" style={{ width: '100%' }}>
-          {deleteList.map((manga: Manga) => {
+          {searchList.map((manga: Manga) => {
             return (
               <Card
 
@@ -406,7 +398,6 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
                 actions={[
                   <EditOutlined onClick={() => { handleEditManga(manga) }} key="edit" />,
                   <Popconfirm
-                    disabled={editMode}
                     placement="bottom"
                     title={'Are you sure you want to delete?'}
                     onConfirm={() => handleDeleteManga(manga)}
