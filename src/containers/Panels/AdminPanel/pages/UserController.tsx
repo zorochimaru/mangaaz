@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react"
 import { SearchOutlined } from "@ant-design/icons";
 import { RouteComponentProps } from "@reach/router"
 import { Button, Input, message, notification, Popconfirm, Select, Space, Table } from "antd";
-import { getDB, RealmApp } from "../../../config/db";
-import { Roles } from "../../../models/User.model";
+import { getDB, RealmApp } from "../../../../config/db";
+import { Roles } from "../../../../models/User.model";
 import Highlighter from "react-highlight-words";
 const roleOptions = [{ value: Roles.ADMIN }, { value: Roles.MODERATOR }, { value: Roles.READER }];
 

@@ -6,9 +6,7 @@ import React, { useState } from "react";
 /*
 TODOS
 ////////////////////////////////
-Show confirm dialog before delete
-Make user controller
-Make delete manga function ???
+
 ////////////////////////////////
 
 */

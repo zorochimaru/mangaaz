@@ -6,17 +6,19 @@ import Sidebar from './components/Sidebar';
 import Home from './containers/Home/Home';
 import Title from 'antd/lib/typography/Title';
 import MangaDetails from './containers/MangaDetails/MangaDetails';
-import Reader from './containers/Reader/Reader';
+import Reader from './containers/Panels/ReaderPanel/ReaderPanel';
 import Auth from './components/Auth';
 import { UserContext } from './HOC/AuthContext';
 import { PrivateRoute } from './HOC/AuthGuard';
-import AdminPanel from './containers/AdminPanel/AdminPanel';
-import ModeratorPanel from './containers/ModeratorPanel/ModeratorPanel';
+import ModeratorPanel from './containers/Panels/ModeratorPanel/ModeratorPanel';
 import { Roles } from './models/User.model';
-import MangaController from './containers/AdminPanel/pages/MangaController';
-import UserController from './containers/AdminPanel/pages/UserController';
-import ChapterController from './containers/AdminPanel/components/ChapterController';
- 
+import AdminPanel from './containers/Panels/AdminPanel/AdminPanel';
+import ChapterController from './containers/Panels/components/ChapterController';
+import MangaController from './containers/Panels/AdminPanel/pages/MangaController';
+import UserController from './containers/Panels/AdminPanel/pages/UserController';
+import ReaderPanel from './containers/Panels/ReaderPanel/ReaderPanel';
+
+
 
 /*
 TODOS
@@ -38,7 +40,7 @@ function App() {
 
 
 
- 
+
   return (
     <UserContext.Provider value={value}>
       <Layout style={{ minHeight: '100vh' }}>
@@ -64,13 +66,16 @@ function App() {
               <Home path="/" />
               <PrivateRoute as={MostRaited} path="most-raited"></PrivateRoute>
               <PrivateRoute role={Roles.ADMIN} as={AdminPanel} path="admin-panel">
-                <ChapterController path="chapter-controller" />
                 <MangaController path="manga-controller" />
+                <ChapterController path="chapter-controller" />
                 <UserController path="user-controller" />
               </PrivateRoute>
-              <PrivateRoute role={Roles.MODERATOR} as={ModeratorPanel} path="moderator-panel"></PrivateRoute>
+              <PrivateRoute role={Roles.MODERATOR} as={ModeratorPanel} path="moderator-panel">
+                <ChapterController path="chapter-controller" />
+              </PrivateRoute>
               <MangaDetails path="manga-details/:id" />
-              <Reader path="reader/:id" />
+              <PrivateRoute role={Roles.READER} as={ReaderPanel} path="reader-panel">
+              </PrivateRoute>
             </Router>
           </Content>
 

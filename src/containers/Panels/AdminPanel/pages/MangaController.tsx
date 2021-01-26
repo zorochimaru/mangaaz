@@ -6,17 +6,16 @@ import Search from "antd/lib/input/Search";
 import TextArea from "antd/lib/input/TextArea";
 import { Option } from "antd/lib/mentions";
 import imageCompression from "browser-image-compression";
-import { error } from "console";
 import React, { CSSProperties, useState } from "react";
 import { BSON } from "realm-web";
-import * as db from '../../../config/db';
-import { Manga } from "../../../models/Manga.model";
+import * as db from '../../../../config/db';
+import { Manga } from "../../../../models/Manga.model";
+
 
 /* 
 TODOS
 ////////////////////////////////
 Add genre function (_id/value - standart will be lowercase)
-
 ////////////////////////////////
 */
 const layout = {
