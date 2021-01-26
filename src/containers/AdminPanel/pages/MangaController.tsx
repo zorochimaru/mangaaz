@@ -1,11 +1,12 @@
-import { LoadingOutlined, PlusOutlined } from "@ant-design/icons"
+import { DeleteOutlined, EditOutlined, LoadingOutlined, PlusOutlined, SearchOutlined, UploadOutlined } from "@ant-design/icons"
 import { RouteComponentProps } from "@reach/router"
-import { message, Form, Input, Button, Select, Row, Col, notification, Divider, Empty, Upload, Drawer, Card } from "antd"
+import { message, Form, Input, Button, Select, Row, Col, notification, Divider, Empty, Upload, Drawer, Card, Image, Popconfirm, Space } from "antd"
 import ImgCrop from "antd-img-crop";
 import Search from "antd/lib/input/Search";
 import TextArea from "antd/lib/input/TextArea";
 import { Option } from "antd/lib/mentions";
 import imageCompression from "browser-image-compression";
+import { error } from "console";
 import React, { CSSProperties, useState } from "react";
 import { BSON } from "realm-web";
 import * as db from '../../../config/db';
@@ -32,9 +33,10 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
   const [coverUrl, setCoverUrl] = useState<string>('');
   const [genresList, setGenresList] = useState<any[]>([]);
   const [newGenreName, setNewGenreName] = useState<string>('');
-  const [showDeleteBar, setShowDeleteBar] = useState(false);
+  const [showSearchBar, setShowSearchBar] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [deleteTitle, setDeleteTitle] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [editItem, setEditItem] = useState<Manga | null>(null);
   const [deleteList, setDeleteList] = useState<Manga[]>([]);
   const [main] = Form.useForm();
   const [searchForm] = Form.useForm();
@@ -44,10 +46,10 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
     }, 0);
   };
   const showDrawer = () => {
-    setShowDeleteBar(true);
+    setShowSearchBar(true);
   };
   const onClose = () => {
-    setShowDeleteBar(false);
+    setShowSearchBar(false);
   };
   const uploadButton = (
     <div style={styles.addCoverButton}>
@@ -68,7 +70,13 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
       reader.readAsDataURL(img);
     })
   }
-
+  function handleEditManga(manga: Manga) {
+    onClose();
+    setEditItem(manga);
+    main.resetFields();
+    main.setFieldsValue(manga);
+    setCoverUrl(manga.coverUrl);
+  }
   const addNewGenreName = () => {
     if (!genresList.some(genre => genre.value.toLocaleLowerCase() === newGenreName?.toLocaleLowerCase())) {
       const hide = message.loading('Adding new genre to library...', 0);
@@ -180,12 +188,32 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
           });
 
       } else {
-        setTimeout(hide, 0);
-        notification['error']({
-          placement: 'bottomRight',
-          message: 'Error',
-          description: 'Manga with this name already exist!',
-        });
+        if (editItem) {
+          db.getDB('manga-library')
+            ?.collection('titles').updateOne({ _id: editItem?._id }, { ...editItem, ...main.getFieldsValue() })
+            .then(() => {
+              notification['success']({
+                message: 'Success',
+                placement: 'bottomRight',
+                description:
+                  'Manga edited!',
+              });
+            })
+            .finally(() => setTimeout(hide, 0)).catch((error) => {
+              notification['error']({
+                placement: 'bottomRight',
+                message: error.errorCodeName,
+                description: error.message,
+              });
+            });
+        } else {
+          setTimeout(hide, 0);
+          notification['error']({
+            placement: 'bottomRight',
+            message: 'Error',
+            description: 'Manga with this name already exist!',
+          });
+        }
       }
     });
 
@@ -220,6 +248,29 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
     setFileList([]);
     handleCoverChange(file);
     return true
+  }
+  function handleDeleteManga(manga: Manga) {
+
+    const hide = message.loading('Action in progress..', 0);
+    db.getDB('manga-library')
+      ?.collection('titles').deleteOne({ _id: manga._id })
+      .then(() => {
+        notification['success']({
+          message: 'Success',
+          placement: 'bottomRight',
+          description:
+            'Manga deleted!',
+        });
+        setDeleteList((list) => list.filter(item => item !== manga));
+      })
+      .finally(() => setTimeout(hide, 0))
+      .catch((error) => {
+        notification['error']({
+          placement: 'bottomRight',
+          message: error.errorCodeName,
+          description: error.message,
+        });
+      });
   }
   return (
     <div>
@@ -284,79 +335,107 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
             >
               <TextArea rows={4} />
             </Form.Item>
-
-            <Form.Item  {...tailLayout}>
-              <Button type="primary" htmlType="submit">
-                Save manga
+            <div style={{ display: 'flex', gap: 20, justifyContent: 'center' }}>
+              <Button type="primary" icon={<SearchOutlined />} onClick={showDrawer}>
+                Search manga
               </Button>
-            </Form.Item>
+
+              <Form.Item  >
+                <Button type="primary" icon={<UploadOutlined />} htmlType="submit">
+                  Save manga
+              </Button>
+              </Form.Item>
+            </div>
+
 
           </Col>
           <Col span={8}>
+            <ImgCrop aspect={5 / 7.8}>
+              <Upload
+                fileList={fileList}
+                customRequest={dummyRequest}
+                beforeUpload={(file) => handleupload(file)}
+              >
+                {coverUrl ? <img src={coverUrl}
+                  alt="cover"
+                  style={{
+                    cursor: 'pointer',
+                    height: 300,
+                    objectFit: 'cover',
+                    border: '4px solid #fff',
+                    boxShadow: '3px 6px 20px -7px rgba(0,0,0,0.75)'
+                  }} /> : uploadButton}
 
-            <Row align="top"  >
-              <Col span={12}>
-                <ImgCrop aspect={5 / 7.8}>
-                  <Upload
-                    fileList={fileList}
-                    customRequest={dummyRequest}
-                    beforeUpload={(file) => handleupload(file)}
-                  >
-                    {coverUrl ? <img src={coverUrl}
-                      alt="cover"
-                      style={{
-                        cursor: 'pointer',
-                        height: 300,
-                        objectFit: 'cover',
-                        border: '4px solid #fff',
-                        boxShadow: '3px 6px 20px -7px rgba(0,0,0,0.75)'
-                      }} /> : uploadButton}
-
-                  </Upload>
-                </ImgCrop>
-              </Col>
-              <Col span={6} >
-                <Button type="primary" danger onClick={showDrawer}>Delete manga</Button>
-              </Col>
-            </Row>
+              </Upload>
+            </ImgCrop>
           </Col>
+
         </Row>
       </Form>
       <Drawer
         width={460}
-        title="Basic Drawer"
+        title={
+          <Form
+            form={searchForm}
+            name="basic"
+            initialValues={{ remember: true }}
+            onFinish={onSearchTitles}
+            onFinishFailed={onFinishFailed}
+          >
+            <Form.Item
+              name="title"
+              rules={[{ required: true, message: 'Please input title!' }]}
+            >
+              <Search placeholder="input title" enterButton="Search" size="large" onSearch={searchForm.submit} loading={searching} />
+            </Form.Item>
+          </Form>
+        }
         placement="right"
         closable={false}
         onClose={onClose}
-        visible={showDeleteBar}
+        visible={showSearchBar}
       >
-        <Form
-          form={searchForm}
-          name="basic"
-          initialValues={{ remember: true }}
-          onFinish={onSearchTitles}
-          onFinishFailed={onFinishFailed}
-        >
-          <Form.Item
-            name="title"
-            rules={[{ required: true, message: 'Please input title!' }]}
-          >
-            <Search placeholder="input title" enterButton="Search" size="large" onSearch={searchForm.submit} loading={searching} />
-          </Form.Item>
 
+        <Space direction="vertical" style={{ width: '100%' }}>
           {deleteList.map((manga: Manga) => {
             return (
-              <Card title="Default size card" extra={<a href="#">More</a>} style={{ width: 300 }}>
-                <p>{manga.title}</p>
+              <Card
+
+                key={manga.title}
+                title={manga.title}
+                actions={[
+                  <EditOutlined onClick={() => { handleEditManga(manga) }} key="edit" />,
+                  <Popconfirm
+                    disabled={editMode}
+                    placement="bottom"
+                    title={'Are you sure you want to delete?'}
+                    onConfirm={() => handleDeleteManga(manga)}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <DeleteOutlined style={{ color: 'red' }} key="delete" />
+                  </Popconfirm>
+                ]}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <p><strong>Author: </strong>{manga.author}</p>
+                    <p><strong>Description: </strong><br />{manga.description}</p>
+                  </div>
+                  <Image
+                    width={80}
+                    src={manga.coverUrl}
+                  />
+
+                </div>
               </Card>
             )
           })}
-
-        </Form>
+        </Space>
       </Drawer>
     </div >
   )
 }
+
 
 const styles: { [key: string]: CSSProperties } = {
   addCoverButton: {
