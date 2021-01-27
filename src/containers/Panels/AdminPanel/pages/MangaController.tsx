@@ -16,6 +16,7 @@ import { Manga } from "../../../../models/Manga.model";
 TODOS
 ////////////////////////////////
 Add genre function (_id/value - standart will be lowercase)
+Disable form on submit
 ////////////////////////////////
 */
 const layout = {

@@ -8,7 +8,7 @@ import Title from 'antd/lib/typography/Title';
 import MangaDetails from './containers/MangaDetails/MangaDetails';
 import Reader from './containers/Panels/ReaderPanel/ReaderPanel';
 import Auth from './components/Auth';
-import { UserContext } from './HOC/AuthContext';
+import { UserContext, UserFactory } from './HOC/AuthContext';
 import { PrivateRoute } from './HOC/AuthGuard';
 import ModeratorPanel from './containers/Panels/ModeratorPanel/ModeratorPanel';
 import { Roles } from './models/User.model';
@@ -17,6 +17,8 @@ import ChapterController from './containers/Panels/components/ChapterController'
 import MangaController from './containers/Panels/AdminPanel/pages/MangaController';
 import UserController from './containers/Panels/AdminPanel/pages/UserController';
 import ReaderPanel from './containers/Panels/ReaderPanel/ReaderPanel';
+import Statistics from './containers/Panels/ReaderPanel/pages/Statistics';
+import MangaReader from './containers/MangaReader/MangaReader';
 
 
 
@@ -36,7 +38,7 @@ const { Header, Content, Footer, Sider } = Layout;
 function App() {
   const [mode, setMode] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const value = useMemo(() => ({ user, setUser }), [user, setUser]);
+  const value = useMemo<UserFactory>(() => ({ user, setUser }), [user, setUser]);
 
 
 
@@ -44,38 +46,48 @@ function App() {
   return (
     <UserContext.Provider value={value}>
       <Layout style={{ minHeight: '100vh' }}>
-        <Sider collapsible collapsed={mode} onCollapse={() => setMode(!mode)}>
+        <Sider style={{
+          overflow: "auto",
+          height: "100vh",
+          position: "sticky",
+          top: 0,
+          left: 0
+        }} collapsible collapsed={mode} onCollapse={() => setMode(!mode)}>
           <Sidebar />
         </Sider>
-        <Layout className="site-layout">
+        <Layout className='site-layout'>
 
 
-          <Header className="site-layout-background" style={{
+          <Header className='site-layout-background' style={{
+            zIndex:2,
             padding: 0,
             height: 61,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            position: 'relative'
+            position: "sticky",
+            top: 0,
           }} >
             <Title style={{ color: '#fff', margin: 0, fontFamily: 'Trade Winds' }}>MangaAz</Title>
             <Auth />
           </Header>
           <Content style={{ margin: '0 16px' }}>
             <Router style={styles.contentWrapper}>
-              <Home path="/" />
-              <PrivateRoute as={MostRaited} path="most-raited"></PrivateRoute>
-              <PrivateRoute role={Roles.ADMIN} as={AdminPanel} path="admin-panel">
-                <MangaController path="manga-controller" />
-                <ChapterController path="chapter-controller" />
-                <UserController path="user-controller" />
+              <Home path='/' />
+              <PrivateRoute as={MostRaited} path='most-raited'></PrivateRoute>
+              <PrivateRoute role={Roles.ADMIN} as={AdminPanel} path='admin-panel'>
+                <MangaController path='manga-controller' />
+                <ChapterController path='chapter-controller' />
+                <UserController path='user-controller' />
               </PrivateRoute>
-              <PrivateRoute role={Roles.MODERATOR} as={ModeratorPanel} path="moderator-panel">
-                <ChapterController path="chapter-controller" />
+              <PrivateRoute role={Roles.MODERATOR} as={ModeratorPanel} path='moderator-panel'>
+                <ChapterController path='chapter-controller' />
               </PrivateRoute>
-              <MangaDetails path="manga-details/:id" />
-              <PrivateRoute role={Roles.READER} as={ReaderPanel} path="reader-panel">
+              <MangaDetails path='manga-details/:id' />
+              <PrivateRoute role={Roles.READER} as={ReaderPanel} path='reader-panel'>
+                <Statistics path='statistics' />
               </PrivateRoute>
+              <MangaReader path={'manga-reader/:mangaId'} />
             </Router>
           </Content>
 

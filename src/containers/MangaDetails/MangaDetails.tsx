@@ -15,7 +15,7 @@ Click on 'Read now' button go to first chapter
 Click on cover image go to last chapter
 ////////////////////////////////////////////////////////////////
 Click on tag go to search page with same tag (Make search page)
-Make rating sistem
+Make rating system
 Make comments section
 */
 const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
@@ -43,7 +43,9 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
                 <Col span={4} >
                     <Space direction="vertical">
                         <img style={styles.cover} src={manga?.coverUrl} alt={manga?.title} />
-                        <Link to={'/reader/' + manga?._id}>  <Button type="primary" block>  Read Now</Button></Link>
+                        <Link to={'/manga-reader/' + manga?._id}>
+                            <Button type="primary" block>Read Now</Button>
+                        </Link>
                     </Space>
                     <Divider orientation="left" plain>
                         Rating

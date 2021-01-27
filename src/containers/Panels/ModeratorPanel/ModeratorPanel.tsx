@@ -16,7 +16,6 @@ const ROUTES = [
         path: 'chapter-controller',
         pathName: 'Chapter controller',
         icon: <DiffOutlined />,
-        public: true
     },
 ]
 const ModeratorPanel = (props: any) => {

@@ -16,19 +16,16 @@ const ROUTES = [
         path: 'manga-controller',
         pathName: 'Manga controller',
         icon: <BookOutlined />,
-        public: true
     },
     {
         path: 'chapter-controller',
         pathName: 'Chapter controller',
         icon: <DiffOutlined />,
-        public: true
     },
     {
         path: 'user-controller',
         pathName: 'User controller',
         icon: <UserOutlined />,
-        public: true
     }
 ]
 const AdminPanel = (props: any) => {

@@ -24,7 +24,7 @@ const ROUTES = [
     }
 ]
 
-const Sidebar = () => {
+const Sidebar: React.FC<any> = () => {
     const { user } = useContext(UserContext);
     const [menuItems, setmenuItems] = useState(ROUTES)
     useEffect(() => {
@@ -62,8 +62,9 @@ const Sidebar = () => {
 
             {props => {
                 return (
-                    <>
+                    <div >
                         <Link to='/'><img src={logo} alt="logo" style={styles.logo} /></Link>
+
                         <Menu theme="dark" mode="inline" selectedKeys={['/' + props.location.pathname.split('/')[1]]}>
 
                             {menuItems.map((route) => {
@@ -74,7 +75,7 @@ const Sidebar = () => {
                             })}
 
                         </Menu>
-                    </>
+                    </div>
                 );
             }}
         </Location>

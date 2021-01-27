@@ -1,7 +1,9 @@
+import { BarChartOutlined } from "@ant-design/icons";
 import { Link, Location } from "@reach/router";
 import { Divider, Menu } from "antd"
 import Title from "antd/lib/typography/Title"
 import React, { useState } from "react";
+ 
 /*
 TODOS
 ////////////////////////////////
@@ -13,10 +15,13 @@ interface Route {
     path: string,
     pathName: string,
     icon: JSX.Element,
-    public: boolean
 }
-const ROUTES = [
- 
+const ROUTES: Route[] = [
+    {
+        path: 'statistics',
+        pathName: 'Statistics',
+        icon: <BarChartOutlined />,
+    }
 ]
 const ReaderPanel = (props: any) => {
     const [menuItems] = useState(ROUTES);
