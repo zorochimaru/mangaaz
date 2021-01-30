@@ -1,31 +1,28 @@
 
 import React from 'react';
 import { RouteComponentProps } from "@reach/router"
-import { createElement, CSSProperties, useEffect, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import { getDB } from "../../config/db";
 import { Chapter } from "../../models/ChapterPage.model";
-import LazyLoad from 'react-lazy-load';
-import { Button, Comment, Drawer, Form, Tooltip } from "antd";
-import { ColumnWidthOutlined, CommentOutlined, DislikeFilled, DislikeOutlined, LikeFilled, LikeOutlined } from "@ant-design/icons";
-import moment from 'moment';
-import Avatar from "antd/lib/avatar/avatar";
-import TextArea from 'antd/lib/input/TextArea';
+import { Button, Drawer } from "antd";
+import { ColumnWidthOutlined, CommentOutlined } from "@ant-design/icons";
 import CommentsBar from './components/CommentsBar';
+import 'react-lazy-load-image-component/src/effects/blur.css';
+import PageViewer from './components/PageViewer';
 ////////////////////////////////////////////////////////////////
 // Add chapter select
 // Add comment section
-// Make offset for load next page
 // Move all styles to css or object
 ////////////////////////////////////////////////////////////////
 
 const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
     const [chapter, setChapter] = useState<Chapter | null>(null);
-    const [pageHeigth, setPageHeigth] = useState('auto');
+    const [pageHeight, setPageHeigth] = useState('auto');
     const [pageWidth, setPageWidth] = useState('auto');
     const [currView, setCurrView] = useState<number>(0);
     const [showComments, setShowComments] = useState(false);
     const imgElement = React.useRef<any>(null);
-    const [currHeigth, setCurrHeigth] = useState(100);
+
     useEffect(() => {
         getDB('manga-library')
             .collection('chapters').findOne({ mangaId: props.mangaId }).then((chapter: any) => {
@@ -97,14 +94,12 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
             >
                 <CommentsBar />
             </Drawer>
-            <div style={{ display: 'flex', width: '100%', textAlign: 'center', flexDirection: 'column', rowGap: 20 }}>
+            <div style={{ display: 'flex', width: '100%', textAlign: 'center', flexFlow: 'column wrap', rowGap: 20 }}>
                 {chapter?.pages.map(page => (
-                    <LazyLoad   offsetVertical={300} width={'100%'} key={page.imgId} >
-                        <img ref={imgElement}
-                            onLoad={() => setCurrHeigth(imgElement.current?.naturalHeight)} style={{ width: pageWidth, height: pageHeigth, objectFit: 'contain' }} src={page.url} />
-                    </LazyLoad>
+                     <PageViewer page={page} pageWidth={pageWidth} pageHeight={pageHeight}/>
                 ))}
             </div>
+
         </div>
     )
 

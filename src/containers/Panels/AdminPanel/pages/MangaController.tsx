@@ -206,15 +206,8 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
           });
         });
     }
-
-
-
   };
 
-  function checkIfExist(name: string) {
-    return db.getDB('manga-library')
-      ?.collection('titles').findOne({ title: new RegExp(name, 'i') });
-  }
 
   const onFinishFailed = (errorInfo: any) => {
 
