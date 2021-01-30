@@ -7,7 +7,7 @@ import { Chapter } from "../../models/ChapterPage.model";
 import { Button, Drawer } from "antd";
 import { ColumnWidthOutlined, CommentOutlined } from "@ant-design/icons";
 import CommentsBar from './components/CommentsBar';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+ 
 import PageViewer from './components/PageViewer';
 ////////////////////////////////////////////////////////////////
 // Add chapter select
@@ -44,7 +44,6 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
             setCurrView(-1)
         }
         setCurrView(c => c + 1);
-        console.log(imgElement.current?.naturalHeight)
     }
     function onOpenComments() {
         setShowComments(true)
@@ -94,9 +93,10 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
             >
                 <CommentsBar />
             </Drawer>
+         
             <div style={{ display: 'flex', width: '100%', textAlign: 'center', flexFlow: 'column wrap', rowGap: 20 }}>
                 {chapter?.pages.map(page => (
-                     <PageViewer page={page} pageWidth={pageWidth} pageHeight={pageHeight}/>
+                     <PageViewer key={page.imgId} page={page} pageWidth={pageWidth} pageHeight={pageHeight}/>
                 ))}
             </div>
 
