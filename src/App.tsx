@@ -21,7 +21,6 @@ import Statistics from './containers/Panels/ReaderPanel/pages/Statistics';
 import MangaReader from './containers/MangaReader/MangaReader';
 
 
-
 /*
 TODOS
 ////////////////////////////////
@@ -38,13 +37,13 @@ const { Header, Content, Footer, Sider } = Layout;
 function App() {
   const [mode, setMode] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const value = useMemo<UserFactory>(() => ({ user, setUser }), [user, setUser]);
+  const userFactory = useMemo<UserFactory>(() => ({ user, setUser }), [user, setUser]);
 
 
 
 
   return (
-    <UserContext.Provider value={value}>
+    <UserContext.Provider value={userFactory}>
       <Layout style={{ minHeight: '100vh' }}>
         <Sider style={{
           overflow: "auto",
@@ -74,7 +73,7 @@ function App() {
           <Content style={{ margin: '0 16px' }}>
             <Router style={styles.contentWrapper}>
               <Home path='/' />
-              <PrivateRoute as={MostRaited} path='most-raited'></PrivateRoute>
+              {/* <TodoListView todoList={store} path='most-raited' /> */}
               <PrivateRoute role={Roles.ADMIN} as={AdminPanel} path='admin-panel'>
                 <MangaController path='manga-controller' />
                 <ChapterController path='chapter-controller' />

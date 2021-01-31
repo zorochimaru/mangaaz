@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { RouteComponentProps } from "@reach/router"
 import { CSSProperties, useEffect, useState } from "react";
 import { getDB } from "../../config/db";
@@ -7,8 +7,9 @@ import { Chapter } from "../../models/ChapterPage.model";
 import { Button, Drawer } from "antd";
 import { ColumnWidthOutlined, CommentOutlined } from "@ant-design/icons";
 import CommentsBar from './components/CommentsBar';
- 
+
 import PageViewer from './components/PageViewer';
+import { PageContext, PageFactory } from '../../HOC/PageContext';
 ////////////////////////////////////////////////////////////////
 // Add chapter select
 // Add comment section
@@ -21,7 +22,8 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
     const [pageWidth, setPageWidth] = useState('auto');
     const [currView, setCurrView] = useState<number>(0);
     const [showComments, setShowComments] = useState(false);
-    const imgElement = React.useRef<any>(null);
+    const [page, setPage] = useState<any>(null);
+    const pageFactory = useMemo<PageFactory>(() => ({ page, setPage }), [page, setPage]);
 
     useEffect(() => {
         getDB('manga-library')
@@ -53,54 +55,56 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
     }
 
     return (
-        <div style={{ position: 'relative' }}>
-            <div style={{
-                position: 'fixed',
-                top: 10,
-                zIndex: 3,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10
-            }}>
-                <Button
-                    type="default"
-                    icon={<ColumnWidthOutlined />}
-                    size={'large'}
-                    onClick={onChangeView}
-                />
-                <span style={{ fontWeight: 'bold', zIndex: 3, color: 'white' }}>Chpapter number: {chapter?.number}</span>
-            </div>
-            <div style={{
-                position: 'fixed',
-                top: 10,
-                right: 200,
-                zIndex: 3
-            }}>
-                <Button
-                    type="default"
-                    icon={<CommentOutlined />}
-                    size={'large'}
-                    onClick={onOpenComments}
-                />
-            </div>
-            <Drawer
-                title="Comments"
-                placement="right"
-                closable={true}
-                onClose={onCloseComments}
-                visible={showComments}
-                width={'25%'}
-            >
-                <CommentsBar />
-            </Drawer>
-         
-            <div style={{ display: 'flex', width: '100%', textAlign: 'center', flexFlow: 'column wrap', rowGap: 20 }}>
-                {chapter?.pages.map(page => (
-                     <PageViewer key={page.imgId} page={page} pageWidth={pageWidth} pageHeight={pageHeight}/>
-                ))}
-            </div>
+        <PageContext.Provider value={pageFactory}>
+            <div style={{ position: 'relative' }}>
+                <div style={{
+                    position: 'fixed',
+                    top: 10,
+                    zIndex: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10
+                }}>
+                    <Button
+                        type="default"
+                        icon={<ColumnWidthOutlined />}
+                        size={'large'}
+                        onClick={onChangeView}
+                    />
+                    <span style={{ fontWeight: 'bold', zIndex: 3, color: 'white' }}>Chpapter number: {chapter?.number}</span>
+                </div>
+                <div style={{
+                    position: 'fixed',
+                    top: 10,
+                    right: 200,
+                    zIndex: 3
+                }}>
+                    <Button
+                        type="default"
+                        icon={<CommentOutlined />}
+                        size={'large'}
+                        onClick={onOpenComments}
+                    />
+                </div>
+                <Drawer
+                    title="Comments"
+                    placement="right"
+                    closable={true}
+                    onClose={onCloseComments}
+                    visible={showComments}
+                    width={'25%'}
+                >
+                    <CommentsBar />
+                </Drawer>
 
-        </div>
+                <div style={{ display: 'flex', width: '100%', textAlign: 'center', flexFlow: 'column wrap', rowGap: 20 }}>
+                    {chapter?.pages.map(page => (
+                        <PageViewer key={page.imgId} page={page} pageWidth={pageWidth} pageHeight={pageHeight} />
+                    ))}
+                </div>
+
+            </div>
+        </PageContext.Provider>
     )
 
 }

@@ -1,21 +1,22 @@
 import { LoadingOutlined } from "@ant-design/icons"
 import { LazyImage } from "react-lazy-images"
 import TrackVisibility from "react-on-screen"
+import { usePage } from "../../../HOC/PageContext";
 
 const PageViewer = (props) => {
-
     const ComponentToTrack = (props: any) => {
-        console.log(props);
+        const { setPage } = usePage();
+
         // TODO: Transfer id for comment bar to get comments for active page
         if (props?.isVisible) {
-            console.log(props?.imageProps);
+            setPage(props?.imageProps.page);
         }
         const style = {
             width: props.imageProps.pageWidth,
             height: props.imageProps.pageHeight,
             objectFit: 'contain'
         };
-        return <img style={style} {...props.imageProps.imageProps}/>
+        return <img style={style} {...props.imageProps.imageProps} />
     }
     return (
 
