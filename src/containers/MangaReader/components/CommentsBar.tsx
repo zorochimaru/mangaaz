@@ -1,43 +1,51 @@
 import { LikeFilled, LikeOutlined, DislikeFilled, DislikeOutlined } from "@ant-design/icons";
-import { Tooltip, Button, Form, Comment, notification, message } from "antd";
+import { Tooltip, Button, Form, Comment, notification, message, Popconfirm, Spin, Skeleton } from "antd";
 import Avatar from "antd/lib/avatar/avatar";
 
 import TextArea from "antd/lib/input/TextArea";
 import moment from "moment";
 import React, { useState, createElement, useEffect, useRef } from "react";
+import { BSON } from "realm-web";
 import { getDB } from "../../../config/db";
 import { useUser } from "../../../HOC/AuthContext";
 import { usePage } from "../../../HOC/PageContext";
 import { MiniUser, PageComment } from "../../../models/PageComment.model";
 import { Roles } from "../../../models/User.model";
 
-const CommentsBar = () => {
-    const [action, setAction] = useState<string | null>(null);
+const CommentsBar = ({ firstPage, sortType }) => {
+    const [loading, setLoading] = useState(false);
     const { user } = useUser();
     const { page } = usePage();
     const [pageCommentList, setPageCommentList] = useState<PageComment[]>([]);
+    const [newComment, setNewComment] = useState('');
 
+    const like = (likes: MiniUser[], author: MiniUser) => {
+        if (likes.some(like => like.authorId === author.authorId)) {
 
-    const like = (likes, author: MiniUser) => {
-        if (likes.some(like => like.authorId !== user?.id)) {
+            getDB('comment-library')
+                ?.collection('comments').updateOne({ imgId: page?.imgId },
+                    { $pull: { "likes": { authorId: author.authorId } } }).then(() => {
+                        fetchComments();
+                    }).finally().catch((error) => {
+                        notification['error']({
+                            placement: 'bottomRight',
+                            message: error.errorCodeName,
+                            description: error.message,
+                        });
+
+                    });
+
+        } else {
 
             const like = {
                 authorId: author.authorId,
                 authorImg: author.authorImg,
                 authorName: author.authorName
             }
-            const hide = message.loading('Action in progress..', 0);
             getDB('comment-library')
-                ?.collection('comments').findOneAndUpdate({ imgId: page?.imgId }, { $addToSet: { likes: like } }).then((res) => {
-                    console.log(res);
-                    notification['success']({
-                        message: 'Success',
-                        placement: 'bottomRight',
-                        description:
-                            'Like added!',
-                    });
-
-                }).finally(() => setTimeout(hide, 0)).catch((error) => {
+                ?.collection('comments').updateOne({ imgId: page?.imgId }, { $addToSet: { likes: like } }).then((res) => {
+                    fetchComments();
+                }).finally().catch((error) => {
                     notification['error']({
                         placement: 'bottomRight',
                         message: error.errorCodeName,
@@ -45,43 +53,62 @@ const CommentsBar = () => {
                     });
 
                 });
-            setAction('liked');
-        } else {
-            // getDB('comment-library')
-            // ?.collection('comments').findOneAndDelete({ imgId: page?.imgId }, { likes: like }).then((res) => {
-            //     console.log(res);
-            //     notification['success']({
-            //         message: 'Success',
-            //         placement: 'bottomRight',
-            //         description:
-            //             'Like added!',
-            //     });
 
-            // }).finally(() => setTimeout(hide, 0)).catch((error) => {
-            //     notification['error']({
-            //         placement: 'bottomRight',
-            //         message: error.errorCodeName,
-            //         description: error.message,
-            //     });
-
-            // });
-            setAction('unliked');
         }
 
 
     };
     useEffect(() => {
-        const hide = message.loading('Action in progress..', 0);
+        fetchComments();
+    }, [page])
+
+    function onDeleteCommnent(comment: PageComment) {
         getDB('comment-library')
-            ?.collection('comments').find({ imgId: page?.imgId }).then((res) => {
-                setPageCommentList(res);
-                notification['success']({
-                    message: 'Success',
+            ?.collection('comments').deleteOne({ authorId: comment.authorId }).then(() => {
+                fetchComments();
+            }).finally(() => null).catch((error) => {
+                notification['error']({
                     placement: 'bottomRight',
-                    description:
-                        'Comments loaded!',
+                    message: error.errorCodeName,
+                    description: error.message,
                 });
-            }).finally(() => setTimeout(hide, 0)).catch((error) => {
+            });
+    }
+
+    function fetchComments() {
+
+        setLoading(true);
+        getDB('comment-library')
+            ?.collection('comments').find({ imgId: page?.imgId || firstPage.imgId }).then((res) => {
+                setPageCommentList(res);
+            }).finally(() => setLoading(false)).catch((error) => {
+                notification['error']({
+                    placement: 'bottomRight',
+                    message: error.errorCodeName,
+                    description: error.message,
+                });
+
+            });
+    }
+
+
+    function postComment() {
+
+        const newCommentObj: PageComment = {
+            _id: new BSON.ObjectId(),
+            authorId: user?.id || 'NA',
+            authorImg: user?.img || 'NA',
+            authorName: user?.name || 'Anonim',
+            date: moment().toDate(),
+            imgId: page?.imgId || firstPage.imgId,
+            likes: [],
+            text: newComment
+        }
+        getDB('comment-library')
+            ?.collection('comments').insertOne(newCommentObj).then(() => {
+                fetchComments();
+                setNewComment('');
+            }).finally(() => null).catch((error) => {
                 notification['error']({
                     placement: 'bottomRight',
                     message: error.errorCodeName,
@@ -90,36 +117,59 @@ const CommentsBar = () => {
 
             });
 
-    }, [page])
-    const actions: any[] = [
-
-    ];
-
-    if (user?.role === Roles.MODERATOR || Roles.ADMIN) {
-        actions.push(<span key="comment-basic-reply-to">Delete</span>)
-    }
-
-
-
-    const Editor = ({ onChange, onSubmit, submitting, value }) => (
-        <div style={{ position: 'fixed', bottom: 0, width: '23%' }}>
-            <Form.Item>
-                <TextArea rows={4} onChange={onChange} value={value} />
-            </Form.Item>
-            <Form.Item>
-                <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
-                    Add Comment
-            </Button>
-            </Form.Item>
-        </div>
-    );
-    function handleTest() {
-
-        console.log(page?.imgId);
 
     }
-    function postComment(comment) {
-        console.log(comment);
+    const deleteButton = (comment: PageComment) =>
+        (user?.role === Roles.MODERATOR
+            || Roles.ADMIN
+            || user?.id === comment.authorId) ?
+            (
+                <Popconfirm
+                    placement="bottom"
+                    title={'Are you sure you want to delete?'}
+                    onConfirm={() => onDeleteCommnent(comment)}
+                    okText="Yes"
+                    cancelText="No"
+                >
+                    <span>Delete</span>
+                </Popconfirm>
+            ) : null
+
+    const likeButton = (comment: PageComment) => (
+        (user?.id !== comment.authorId) ?
+            <Tooltip key="comment-basic-like" title="Like">
+                <span onClick={() => like(comment.likes, {
+                    authorId: user?.id,
+                    authorImg: user?.img,
+                    authorName: user?.name
+                })}>
+                    {createElement(
+                        comment.likes.some(like => like.authorId === user?.id)
+                            ? LikeFilled : LikeOutlined)}
+                    <span className="comment-action">{comment.likes.length}</span>
+                </span>
+            </Tooltip> : null
+    )
+    function handleChangeNewComment(e) {
+        setNewComment(e.target.value);
+    }
+    function sortByDate() {
+        return pageCommentList.sort((a, b) => +b.date - +a.date)
+    }
+    function sortByPop() {
+        return pageCommentList.sort((a, b) => {
+            if (a.likes.length > b.likes.length) {
+                return -1;
+            }
+            if (a.likes.length < b.likes.length) {
+                return 1;
+            }
+            // a должно быть равным b
+            return 0;
+        })
+    }
+    function handleSortType() {
+        return sortType === 'likes' ? sortByPop() : sortByDate()
     }
     return (
         <>
@@ -128,53 +178,50 @@ const CommentsBar = () => {
                 overflowY: 'scroll',
                 scrollbarWidth: 'thin'
             }}>
-                <Button onClick={handleTest}>See</Button>
+                {loading ? <Skeleton avatar paragraph={{ rows: 4 }} /> :
 
-                {pageCommentList.map(comment => (
+                    handleSortType().map(comment => (
 
-                    <Comment
-                        key={comment._id.toHexString()}
-                        actions={[
-                            <Tooltip key="comment-basic-like" title="Like">
-                                <span onClick={() => like(comment.likes, {
-                                    authorId: user?.id,
-                                    authorImg: user?.img,
-                                    authorName: user?.name
-                                })}>
-                                    {createElement(action === 'liked' ? LikeFilled : LikeOutlined)}
-                                    <span className="comment-action">{comment.likes.length}</span>
-                                </span>
-                            </Tooltip>, ...actions,
-                        ]}
-                        author={comment.authorName}
-                        avatar={
-                            <Avatar
-                                src={comment.authorImg}
-                                alt={comment.authorName}
-                            />
-                        }
-                        content={
-                            <p>
-                                {comment.text}
-                            </p>
-                        }
-                        datetime={
+                        <Comment
+                            key={comment._id.toHexString()}
+                            actions={[
+                                likeButton(comment),
+                                deleteButton(comment)
+                            ]}
+                            author={comment.authorName}
+                            avatar={
+                                <Avatar
+                                    src={comment.authorImg}
+                                    alt={comment.authorName}
+                                />
+                            }
+                            content={
+                                <p>
+                                    {comment.text}
+                                </p>
+                            }
+                            datetime={
 
-                            <span>{moment(comment.date).format('DD-MM-YYYY HH:mm')}</span>
+                                <span>{moment(comment.date).format('DD-MM-YYYY HH:mm')}</span>
 
-                        }
-                    />
-                ))}
+                            }
+                        />
+                    ))
 
+                }
 
             </div>
+            <div style={{ position: 'fixed', bottom: 0, width: '23%' }}>
+                <Form.Item>
+                    <TextArea rows={4} onChange={handleChangeNewComment} value={newComment} />
+                </Form.Item>
+                <Form.Item>
+                    <Button disabled={!newComment} htmlType="submit" loading={false} onClick={postComment} type="primary">
+                        Add Comment
+                    </Button>
+                </Form.Item>
+            </div>
 
-            <Editor
-                onChange={postComment}
-                onSubmit={postComment}
-                submitting={false}
-                value={'adasdas'}
-            />
         </>
     )
 }

@@ -4,12 +4,13 @@ import { RouteComponentProps } from "@reach/router"
 import { CSSProperties, useEffect, useState } from "react";
 import { getDB } from "../../config/db";
 import { Chapter } from "../../models/ChapterPage.model";
-import { Button, Drawer } from "antd";
+import { Button, Drawer, Select } from "antd";
 import { ColumnWidthOutlined, CommentOutlined } from "@ant-design/icons";
 import CommentsBar from './components/CommentsBar';
 
 import PageViewer from './components/PageViewer';
 import { PageContext, PageFactory } from '../../HOC/PageContext';
+ 
 ////////////////////////////////////////////////////////////////
 // Add chapter select
 // Add comment section
@@ -23,8 +24,8 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
     const [currView, setCurrView] = useState<number>(0);
     const [showComments, setShowComments] = useState(false);
     const [page, setPage] = useState<any>(null);
+    const [sortType, setSortType] = useState('likes');
     const pageFactory = useMemo<PageFactory>(() => ({ page, setPage }), [page, setPage]);
-
     useEffect(() => {
         getDB('manga-library')
             .collection('chapters').findOne({ mangaId: props.mangaId }).then((chapter: any) => {
@@ -53,6 +54,11 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
     function onCloseComments() {
         setShowComments(false)
     }
+    function handleSortChange(value) {
+        setSortType(value);
+    }
+
+
 
     return (
         <PageContext.Provider value={pageFactory}>
@@ -89,16 +95,21 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
                 <Drawer
                     title="Comments"
                     placement="right"
-                    closable={true}
+                    closable={false}
+                    destroyOnClose={true}
                     onClose={onCloseComments}
-                    visible={showComments}
+                    visible={showComments && !!chapter}
                     width={'25%'}
                 >
-                    <CommentsBar />
+                    <Select defaultValue="likes" style={{ width: 130, position: 'fixed', top: 10, right: 20 }} onChange={handleSortChange}>
+                        <Select.Option value="date">By Date</Select.Option>
+                        <Select.Option value="likes">By Popularity</Select.Option>
+                    </Select>
+                    <CommentsBar sortType={sortType} firstPage={chapter?.pages[0]} />
                 </Drawer>
 
                 <div style={{ display: 'flex', width: '100%', textAlign: 'center', flexFlow: 'column wrap', rowGap: 20 }}>
-                    {chapter?.pages.map(page => (
+                    {chapter?.pages.map((page, index) => (
                         <PageViewer key={page.imgId} page={page} pageWidth={pageWidth} pageHeight={pageHeight} />
                     ))}
                 </div>

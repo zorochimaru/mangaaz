@@ -6,8 +6,6 @@ import { usePage } from "../../../HOC/PageContext";
 const PageViewer = (props) => {
     const ComponentToTrack = (props: any) => {
         const { setPage } = usePage();
-
-        // TODO: Transfer id for comment bar to get comments for active page
         if (props?.isVisible) {
             setPage(props?.imageProps.page);
         }
