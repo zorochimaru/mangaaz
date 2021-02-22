@@ -19,6 +19,7 @@ import UserController from './containers/Panels/AdminPanel/pages/UserController'
 import ReaderPanel from './containers/Panels/ReaderPanel/ReaderPanel';
 import Statistics from './containers/Panels/ReaderPanel/pages/Statistics';
 import MangaReader from './containers/MangaReader/MangaReader';
+import MostRaited from './containers/MostRaited/MostRaited';
 
 
 /*
@@ -73,7 +74,7 @@ function App() {
           <Content style={{ margin: '0 16px' }}>
             <Router style={styles.contentWrapper}>
               <Home path='/' />
-              {/* <TodoListView todoList={store} path='most-raited' /> */}
+              <MostRaited path='most-raited' />
               <PrivateRoute role={Roles.ADMIN} as={AdminPanel} path='admin-panel'>
                 <MangaController path='manga-controller' />
                 <ChapterController path='chapter-controller' />
@@ -86,22 +87,18 @@ function App() {
               <PrivateRoute role={Roles.READER} as={ReaderPanel} path='reader-panel'>
                 <Statistics path='statistics' />
               </PrivateRoute>
-              <MangaReader path={'manga-reader/:mangaId'} />
+              <MangaReader path={'manga-reader/:mangaId/:chapterId'} />
             </Router>
           </Content>
 
 
-          <Footer style={{ textAlign: 'center' }}>Some useless text ©</Footer>
+          <Footer style={{ textAlign: 'center' }}>Some useless Rasim ©</Footer>
         </Layout>
       </Layout >
     </UserContext.Provider>
   );
 }
-const MostRaited: React.FC<RouteComponentProps> = () => (
-  <div>
-    <h2>MostRaited</h2>
-  </div>
-);
+ 
 const styles: { [key: string]: CSSProperties } = {
   mainWrapper: {
     display: 'flex',

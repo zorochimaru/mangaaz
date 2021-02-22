@@ -7,5 +7,7 @@ export interface Manga {
     description: string,
     genres: string[],
     author: string,
-    ownerId: Object | undefined
+    ownerId: Object | undefined,
+    rating: number,
+    chaptersCount: number,
 }

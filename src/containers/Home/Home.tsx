@@ -1,12 +1,11 @@
 import React, { CSSProperties, useContext, useEffect, useState } from 'react'
-import Meta from 'antd/lib/card/Meta';
-import './Home.css';
-import { Card, Col, Divider, notification, Row, Spin } from 'antd';
+import { Col, Divider, notification, Row, Spin } from 'antd';
 import * as db from '../../config/db';
 import { Link, RouteComponentProps } from '@reach/router';
 import Title from 'antd/lib/typography/Title';
 import { Manga } from '../../models/Manga.model';
 import { UserContext } from '../../HOC/AuthContext';
+import MangaCard from '../../components/MangaCard';
 /*
 TODOS
 ////////////////////////////////
@@ -50,14 +49,7 @@ const Home: React.FC<RouteComponentProps> = () => {
                             <Col span={6} key={manga._id.toHexString()} >
 
                                 <Link to={'manga-details/' + manga._id.toHexString()}>
-                                    <Card
-
-                                        hoverable
-                                        style={styles.card}
-                                        cover={<img style={styles.cardImage} alt={manga.title} src={manga.coverUrl} />}
-                                    >
-                                        <Meta title={manga.title} description={manga.genres.join(', ')} />
-                                    </Card>
+                                   <MangaCard styles={styles} manga={manga}/>
                                 </Link>
 
 

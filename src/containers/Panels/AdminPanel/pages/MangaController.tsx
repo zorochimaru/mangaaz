@@ -159,7 +159,9 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
         description: values.description,
         genres: values.genres,
         title: values.title,
-        ownerId: db.RealmApp.currentUser?.customData.id
+        ownerId: db.RealmApp.currentUser?.customData.id,
+        rating: 0,
+        chaptersCount: 0
       };
       // save to DB
       db.getDB('manga-library')

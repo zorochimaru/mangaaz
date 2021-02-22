@@ -124,13 +124,17 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
         };
         db.getDB('manga-library')
             ?.collection('chapters').insertOne(newChapter).then(() => {
-                notification['success']({
-                    message: 'Success',
-                    placement: 'bottomRight',
-                    description:
-                        'Chapter added!',
-                });
-                clearData();
+                db.getDB('manga-library')
+                    ?.collection('titles').updateOne({ mangaId: mangaId }, { $inc: { chaptersCount: 1 } }).then(() => {
+
+                        notification['success']({
+                            message: 'Success',
+                            placement: 'bottomRight',
+                            description:
+                                'Chapter added!',
+                        });
+                        clearData();
+                    })
             }).finally(() => setTimeout(hide, 0)).catch((error) => {
                 notification['error']({
                     placement: 'bottomRight',
@@ -162,13 +166,16 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
 
         db.getDB('manga-library')
             ?.collection('chapters').deleteOne({ mangaId: mangaId, number: сhapterNumber }).then(() => {
-                notification['success']({
-                    message: 'Success',
-                    placement: 'bottomRight',
-                    description:
-                        'Chapter deleted!',
-                });
-                clearData();
+                db.getDB('manga-library')
+                    ?.collection('titles').updateOne({ mangaId: mangaId }, { $inc: { chaptersCount: -1 } }).then(() => {
+                        notification['success']({
+                            message: 'Success',
+                            placement: 'bottomRight',
+                            description:
+                                'Chapter deleted!',
+                        });
+                        clearData();
+                    });
             }).finally(() => setTimeout(hide, 0)).catch(error => {
                 setExistInDb(false);
                 notification['error']({
@@ -197,7 +204,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
                     </Select>
                 </Col>
                 <Col offset={2} span={1}>
-                    <InputNumber min={1} defaultValue={0} value={сhapterNumber} onChange={(num) => setChapterNumber(num)} />
+                    <InputNumber min={0} defaultValue={0} value={сhapterNumber} onChange={(num) => setChapterNumber(num)} />
                 </Col>
                 <Col offset={2} span={4}>
 

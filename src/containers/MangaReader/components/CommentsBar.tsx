@@ -1,10 +1,10 @@
-import { LikeFilled, LikeOutlined, DislikeFilled, DislikeOutlined } from "@ant-design/icons";
-import { Tooltip, Button, Form, Comment, notification, message, Popconfirm, Spin, Skeleton } from "antd";
+import { LikeFilled, LikeOutlined } from "@ant-design/icons";
+import { Tooltip, Button, Form, Comment, notification, Popconfirm, Skeleton } from "antd";
 import Avatar from "antd/lib/avatar/avatar";
 
 import TextArea from "antd/lib/input/TextArea";
 import moment from "moment";
-import React, { useState, createElement, useEffect, useRef } from "react";
+import React, { useState, createElement, useEffect } from "react";
 import { BSON } from "realm-web";
 import { getDB } from "../../../config/db";
 import { useUser } from "../../../HOC/AuthContext";
@@ -43,7 +43,7 @@ const CommentsBar = ({ firstPage, sortType }) => {
                 authorName: author.authorName
             }
             getDB('comment-library')
-                ?.collection('comments').updateOne({ imgId: page?.imgId }, { $addToSet: { likes: like } }).then((res) => {
+                ?.collection('comments').updateOne({ imgId: page?.imgId }, { $addToSet: { likes: like } }).then(() => {
                     fetchComments();
                 }).finally().catch((error) => {
                     notification['error']({
