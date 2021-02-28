@@ -13,12 +13,12 @@ import { Roles } from '../models/User.model';
 const ROUTES = [
     {
         path: '/',
-        pathName: 'Home',
+        pathName: 'Son yenilənmə',
         icon: <HomeOutlined />,
     },
     {
         path: '/most-raited',
-        pathName: 'Most Raited',
+        pathName: 'Ən çox qiymətləndirilib',
         icon: <StarOutlined />,
 
     }
@@ -32,7 +32,7 @@ const Sidebar: React.FC<any> = () => {
         if (user?.role === Roles.ADMIN) {
             setmenuItems(m => [{
                 path: '/admin-panel',
-                pathName: 'Admin panel',
+                pathName: 'İdarə paneli',
                 icon: <EditOutlined />,
                 private: true
             }, ...m
@@ -41,7 +41,7 @@ const Sidebar: React.FC<any> = () => {
         if (user?.role === Roles.MODERATOR) {
             setmenuItems(m => [{
                 path: '/moderator-panel',
-                pathName: 'Moderator panel',
+                pathName: 'Moderator paneli',
                 icon: <EditOutlined />,
                 private: true
             }, ...m
@@ -50,7 +50,7 @@ const Sidebar: React.FC<any> = () => {
         if (user?.role === Roles.READER) {
             setmenuItems(m => [{
                 path: '/reader-panel',
-                pathName: 'Reader panel',
+                pathName: 'Oxucu paneli',
                 icon: <EditOutlined />,
                 private: true
             }, ...m

@@ -127,7 +127,7 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
                 }
             });
     }
- 
+
 
     if (!isLoaded) {
         return <div><Spin size="large" /></div>;
@@ -138,18 +138,18 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
                 <Col span={4} >
                     <Space direction="vertical">
                         <Image style={styles.cover} src={manga?.coverUrl} alt={manga?.title} />
-                        <Button onClick={onReadFirstChapter} type="primary" block>Read First Chapter</Button>
-                        <Button onClick={onReadLastChapter} type="primary" block>Read Last Chapter</Button>
-                        <Button onClick={onContinue} type="primary" block>Continue Read</Button>
+                        <Button onClick={onReadFirstChapter} type="primary" block>Birinci fəsli oxuyun</Button>
+                        <Button onClick={onReadLastChapter} type="primary" block>Son Fəsli oxuyun</Button>
+                        <Button onClick={onContinue} type="primary" block>Davamlı oxuyun</Button>
                     </Space>
                     <Divider orientation="left" plain>
-                        Rating
+                        Reytinq
                     </Divider>
 
                     <Rate disabled={loadingRate} value={currUserRate} onChange={handleRateChange} className="rate" />
                     {loadingRate ? <Spin style={{ marginLeft: 10 }} /> : null}
                     <Divider orientation="left" plain>
-                        Total score
+                        Ümumi hesab
                     </Divider>
 
                     <Statistic style={{ marginTop: 10, textAlign: 'center' }} value={averageScore} suffix="/ 5" />
@@ -158,7 +158,7 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
                 </Col>
                 <Col span={18} offset={1}>
                     <Title level={3}>{manga?.title}</Title>
-                    <Title level={5}>Author: {manga?.author}</Title>
+                    <Title level={5}>Müəllif: {manga?.author}</Title>
                     <Space direction="vertical">
                         <Text code>{manga?.genres.join(', ')}</Text>
                         <Text>{manga?.description}</Text>

@@ -14,7 +14,7 @@ TODOS
 const ROUTES = [
     {
         path: 'chapter-controller',
-        pathName: 'Chapter controller',
+        pathName: 'Fəsil nəzarətçi',
         icon: <DiffOutlined />,
     },
 ]
@@ -23,7 +23,7 @@ const ModeratorPanel = (props: any) => {
 
     return (
         <div>
-            <Title level={2}>Moderator panel</Title>
+            <Title level={2}>Moderator paneli</Title>
             <Divider orientation="left"></Divider>
             <Location>
                 {props => {

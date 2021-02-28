@@ -39,7 +39,7 @@ const Home: React.FC<RouteComponentProps> = () => {
     } else {
         return (
             <>
-                <Title level={2}>Last updated</Title>
+                <Title level={2}>Son yenilənmə</Title>
                 <Divider orientation="left"></Divider>
 
                 <Row gutter={16}>

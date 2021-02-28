@@ -19,7 +19,7 @@ interface Route {
 const ROUTES: Route[] = [
     {
         path: 'statistics',
-        pathName: 'Statistics',
+        pathName: 'Statistika',
         icon: <BarChartOutlined />,
     }
 ]
@@ -28,7 +28,7 @@ const ReaderPanel = (props: any) => {
 
     return (
         <div>
-            <Title level={2}>Reader panel</Title>
+            <Title level={2}>Oxucu paneli</Title>
             <Divider orientation="left"></Divider>
             <Location>
                 {props => {

@@ -188,7 +188,7 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
                     />
                 </div>
                 <Drawer
-                    title="Comments"
+                    title="Şərhlər"
                     placement="right"
                     closable={false}
                     destroyOnClose={true}
@@ -197,8 +197,8 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
                     width={'25%'}
                 >
                     <Select defaultValue="likes" style={{ width: 130, position: 'fixed', top: 10, right: 20 }} onChange={handleSortChange}>
-                        <Select.Option value="date">By Date</Select.Option>
-                        <Select.Option value="likes">By Popularity</Select.Option>
+                        <Select.Option value="date">Tarixə görə</Select.Option>
+                        <Select.Option value="likes">Populyarlıqla</Select.Option>
                     </Select>
                     <CommentsBar sortType={sortType} firstPage={chapter?.pages[0]} />
                 </Drawer>

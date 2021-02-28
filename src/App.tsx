@@ -92,7 +92,7 @@ function App() {
           </Content>
 
 
-          <Footer style={{ textAlign: 'center' }}>Some useless Rasim ©</Footer>
+          <Footer style={{ textAlign: 'center' }}>No one right reserved ©</Footer>
         </Layout>
       </Layout >
     </UserContext.Provider>
