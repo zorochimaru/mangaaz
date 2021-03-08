@@ -1,6 +1,6 @@
-import { Link, navigate, RouteComponentProps } from '@reach/router'
+import { navigate, RouteComponentProps } from '@reach/router'
 import { Button, Col, Divider, Image, notification, Rate, Row, Space, Spin, Statistic } from 'antd';
-import React, { CSSProperties, useEffect, useState } from 'react'
+import React, { CSSProperties, useCallback, useEffect, useState } from 'react'
 import { Manga } from '../../models/Manga.model';
 import Title from 'antd/lib/typography/Title';
 import Text from 'antd/lib/typography/Text';
@@ -18,25 +18,30 @@ Click on cover image go to last chapter
 Click on tag go to search page with same tag (Make search page)
 */
 const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
-    const [error, setError] = useState(null);
+
     const [isLoaded, setIsLoaded] = useState<boolean>(false);
     const [manga, setManga] = useState<Manga | null>(null);
-    const [mangaRating, setMangaRating] = useState<any>(null);
+    const [mangaId] = useState<string>(props.id);
     const [averageScore, setAverageScore] = useState(0);
     const [currUserRate, setCurrUserRate] = useState(0);
     const [loadingRate, setLoadingRate] = useState(false);
     const { user } = useUser();
+    const memoizefetchRating = useCallback(fetchRating, [mangaId, user]);
+    useEffect(() => {
+        memoizefetchRating();
+    }, [memoizefetchRating])
     useEffect(() => {
         getDB('manga-library')
-            .collection('titles').findOne({ _id: new BSON.ObjectId(props.id) }).then((manga: any) => {
+            .collection('titles').findOne({ _id: new BSON.ObjectId(mangaId) }).then((manga: any) => {
                 setIsLoaded(true);
                 setManga(manga);
             }).catch(err =>
-                setError(err)
-            );
-        fetchRating();
-
-    }, [])
+                notification['error']({
+                    placement: 'bottomRight',
+                    message: err.errorCodeName,
+                    description: err.message,
+                }));
+    }, [mangaId])
     function writeAvarageScoreToManga() {
         setLoadingRate(true);
         getDB('rating-library')
@@ -72,11 +77,11 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
                             $addToSet: { data: newRate }
                         }, { upsert: true }).finally(() => {
                             writeAvarageScoreToManga();
-                            fetchRating();
+                            memoizefetchRating();
                         });
                 } else {
                     writeAvarageScoreToManga();
-                    fetchRating();
+                    memoizefetchRating();
                 }
             }).finally().catch((error) => {
                 notification['error']({
@@ -88,17 +93,19 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
     }
     function fetchRating() {
         getDB('rating-library')
-            .collection('titles').findOne({ mangaId: new BSON.ObjectId(props.id) }).then((mangaRating: any) => {
+            .collection('titles').findOne({ mangaId: new BSON.ObjectId(mangaId) }).then((mangaRating: any) => {
                 if (mangaRating) {
-                    setMangaRating(mangaRating);
                     const averageScore = (mangaRating.data.reduce((prev, curr) => +prev + +curr.rate, 0)
                         / mangaRating.data.length).toFixed(1);
                     setAverageScore(+averageScore);
                     setCurrUserRate(mangaRating.data.find(el => el.personId === user?.id ? el.rate : 0).rate);
                 }
             }).catch(err =>
-                setError(err)
-            );
+                notification['error']({
+                    placement: 'bottomRight',
+                    message: err.errorCodeName,
+                    description: err.message,
+                }));
     }
     function onReadFirstChapter() {
         getDB('manga-library')
@@ -127,7 +134,7 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
                 }
             });
     }
- 
+
 
     if (!isLoaded) {
         return <div><Spin size="large" /></div>;

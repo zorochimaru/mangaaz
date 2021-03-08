@@ -97,7 +97,7 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
     function goToNextChapter() {
         getDB('manga-library')
             ?.collection('chapters')
-            .findOne({ _id: { $gt: new BSON.ObjectId(chapterId) } })
+            .findOne({ number: { $gt: chapterNumber } })
             .then((res: Chapter) => {
                 if (res) {
                     setChapterId(res._id.toHexString());
@@ -107,6 +107,9 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
                         .updateOne({ mangaId: mangaId, userId: user?.id }, {
                             $set: { chapterId: res?._id.toHexString() }
                         }, { upsert: true });
+                } else {
+                    console.log('Last one');
+                    navigate(`/manga-details/${mangaId}`);
                 }
             });
     }

@@ -1,12 +1,11 @@
 import React, { CSSProperties, useMemo, useState } from 'react'
-import { RouteComponentProps, Router } from '@reach/router';
+import { Router } from '@reach/router';
 import './App.css'
 import { Layout } from 'antd';
 import Sidebar from './components/Sidebar';
 import Home from './containers/Home/Home';
 import Title from 'antd/lib/typography/Title';
 import MangaDetails from './containers/MangaDetails/MangaDetails';
-import Reader from './containers/Panels/ReaderPanel/ReaderPanel';
 import Auth from './components/Auth';
 import { UserContext, UserFactory } from './HOC/AuthContext';
 import { PrivateRoute } from './HOC/AuthGuard';
