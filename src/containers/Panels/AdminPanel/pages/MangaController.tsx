@@ -76,7 +76,7 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
   }
   const addNewGenreName = () => {
     if (!genresList.some(genre => genre.value.toLocaleLowerCase() === newGenreName?.toLocaleLowerCase())) {
-      const hide = message.loading('Adding new genre to library...', 0);
+      const hide = message.loading('Yeni janr bazaya əlave olunur...', 0);
       db.getDB('options-library')
         ?.collection('genres').insertOne({ _id: new BSON.ObjectId(), value: newGenreName?.toLocaleLowerCase() }).finally(() => {
           setTimeout(hide, 0)
@@ -102,7 +102,7 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
       useWebWorker: true
     }
     if (!imageFile.type.includes('image/')) {
-      message.error(`${imageFile.name} is not a image file`);
+      message.error(`${imageFile.name} şəkil deyil`);
       return
     }
     setCoverLoading(true);
@@ -192,7 +192,7 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
             message: 'Success',
             placement: 'bottomRight',
             description:
-              'Manga edited!',
+              'Manga düzəliş edildi!',
           });
           setEditItem(null);
           setSearchList([]);
@@ -246,7 +246,7 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
           message: 'Success',
           placement: 'bottomRight',
           description:
-            'Manga deleted!',
+            'Manga silindi!',
         });
         setSearchList((list) => list.filter(item => item !== manga));
       })
@@ -305,7 +305,7 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
                     <Divider style={{ margin: '4px 0' }} />
                     <div style={{ display: 'flex', flexWrap: 'nowrap', padding: 8 }}>
                       <Input style={{ flex: 'auto' }} type="text" value={newGenreName} onChange={(e) => setNewGenreName(e.target.value)} />
-                      <Button type="link" disabled={!newGenreName} onClick={addNewGenreName}><PlusOutlined />Add genre</Button>
+                      <Button type="link" disabled={!newGenreName} onClick={addNewGenreName}><PlusOutlined />Janr əlavə et</Button>
                     </div>
                   </div>
                 )}
@@ -373,7 +373,7 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
               name="title"
               rules={[{ required: true, message: 'Başlığı daxil edin!' }]}
             >
-              <Search placeholder="input title" enterButton="Search" size="large" onSearch={searchForm.submit} loading={searching} />
+              <Search placeholder="Başlığı daxil edin" enterButton="Axtar" size="large" onSearch={searchForm.submit} loading={searching} />
             </Form.Item>
           </Form>
         }
