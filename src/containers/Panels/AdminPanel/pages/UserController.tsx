@@ -76,7 +76,7 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
         });
     }
     function handleRoleChange(value: string, user) {
-        const hide = message.loading('Action in progress..', 0);
+        const hide = message.loading('Fəaliyyət davam edir...', 0);
         getDB('auth')?.collection('users').updateOne({ id: user.id }, { $set: { role: value } }).then(() => {
             notification['success']({
                 message: 'Success',
@@ -93,7 +93,7 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
         })
     }
     function handleDeleteUser(user) {
-        const hide = message.loading('Action in progress..', 0);
+        const hide = message.loading('Fəaliyyət davam edir...', 0);
         getDB('auth')?.collection('users').deleteOne({ id: user.id }).then(() => {
             fetchUsers(pagination);
             notification['success']({
@@ -128,7 +128,7 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
                     ref={node => {
                         setSearchInput(node);
                     }}
-                    placeholder={`Search ${dataIndex}`}
+                    placeholder={`Axtar ${dataIndex}`}
                     value={selectedKeys[0]}
                     onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
                     onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
@@ -142,10 +142,10 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
                         size="small"
                         style={{ width: 90 }}
                     >
-                        Search
+                        Axtar
               </Button>
                     <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-                        Reset
+                        Sıfırla
               </Button>
                 </Space>
             </div>
@@ -180,18 +180,18 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
     }
     const columns = [
         {
-            title: 'Name',
+            title: 'Ad',
             dataIndex: 'name',
             key: 'name',
         },
         {
-            title: 'Email',
+            title: 'E-poçt',
             dataIndex: 'email',
             key: 'email',
             ...getColumnSearchProps('email'),
         },
         {
-            title: 'Role',
+            title: 'Rolu',
             key: 'role',
             dataIndex: 'role',
             render: (text: string, user) =>
@@ -205,12 +205,12 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
                 />
         },
         {
-            title: 'Action',
+            title: 'Fəaliyyət',
             key: 'action',
             render: (_, user: { key: React.Key }) =>
                 userList.length >= 1 ? (
                     <Popconfirm disabled={checkUser(user)} title="Sure to delete?" onConfirm={() => handleDeleteUser(user)}>
-                        <Button disabled={checkUser(user)} type="primary" danger>Delete</Button>
+                        <Button disabled={checkUser(user)} type="primary" danger>Sil</Button>
                     </Popconfirm>
                 ) : null,
 

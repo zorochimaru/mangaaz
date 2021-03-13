@@ -14,17 +14,17 @@ TODOS
 const ROUTES = [
     {
         path: 'manga-controller',
-        pathName: 'Manga controller',
+        pathName: 'Manqa nəzarətçisi',
         icon: <BookOutlined />,
     },
     {
         path: 'chapter-controller',
-        pathName: 'Chapter controller',
+        pathName: 'Fəsil nəzarətçi',
         icon: <DiffOutlined />,
     },
     {
         path: 'user-controller',
-        pathName: 'User controller',
+        pathName: 'İstifadəçilər nəzarətçi',
         icon: <UserOutlined />,
     }
 ]
@@ -33,7 +33,7 @@ const AdminPanel = (props: any) => {
 
     return (
         <div>
-            <Title level={2}>Admin panel</Title>
+            <Title level={2}>İdarə paneli</Title>
             <Divider orientation="left"></Divider>
             <Location>
                 {props => {

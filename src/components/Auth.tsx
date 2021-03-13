@@ -73,7 +73,7 @@ const Auth: React.FC<any> = () => {
                     buttonText="Logout"
                     onLogoutSuccess={logoutHandler}
                     render={renderProps => (
-                        <Button icon={<GoogleOutlined />} onClick={renderProps.onClick} disabled={renderProps.disabled}>Logout</Button>
+                        <Button icon={<GoogleOutlined />} onClick={renderProps.onClick} disabled={renderProps.disabled}>Çıxış</Button>
                     )}
                 />
             </div>
@@ -81,7 +81,7 @@ const Auth: React.FC<any> = () => {
             : <GoogleLogin
                 clientId={GOOGLE_OAUTH2}
                 render={renderProps => (
-                    <Button icon={<GoogleOutlined />} style={styles.login} onClick={renderProps.onClick} disabled={renderProps.disabled}>Login</Button>
+                    <Button icon={<GoogleOutlined />} style={styles.login} onClick={renderProps.onClick} disabled={renderProps.disabled}>Daxil ol</Button>
                 )}
                 onSuccess={(data) => loginHandler(data)}
                 onFailure={logoutHandler}

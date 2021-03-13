@@ -126,12 +126,12 @@ const CommentsBar = ({ firstPage, sortType }) => {
             (
                 <Popconfirm
                     placement="bottom"
-                    title={'Are you sure you want to delete?'}
+                    title={'Silmək istədiyinizə əminsiniz?'}
                     onConfirm={() => onDeleteCommnent(comment)}
-                    okText="Yes"
-                    cancelText="No"
+                    okText="Bəli"
+                    cancelText="Yox"
                 >
-                    <span>Delete</span>
+                    <span>Sil</span>
                 </Popconfirm>
             ) : null
 
@@ -217,7 +217,7 @@ const CommentsBar = ({ firstPage, sortType }) => {
                 </Form.Item>
                 <Form.Item>
                     <Button disabled={!newComment} htmlType="submit" loading={false} onClick={postComment} type="primary">
-                        Add Comment
+                        Şərh əlavə edin
                     </Button>
                 </Form.Item>
             </div>

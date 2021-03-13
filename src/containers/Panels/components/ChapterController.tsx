@@ -2,7 +2,7 @@ import { UploadOutlined } from "@ant-design/icons"
 import { RouteComponentProps } from "@reach/router"
 import { Upload, Button, Image, Select, InputNumber, Row, Col, notification, message } from "antd"
 import { Option } from "antd/lib/mentions";
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import * as XLSX from 'xlsx';
 import { ChapterPage } from "../../../models/ChapterPage.model";
 import * as db from '../../../config/db';
@@ -16,7 +16,15 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
     const [mangaList, setMangaList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [existInDb, setExistInDb] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('')
 
+    useEffect(() => {
+      const delayDebounceFn = setTimeout(() => {
+        handleSearchTitle(searchTerm);
+      }, 500)
+  
+      return () => clearTimeout(delayDebounceFn)
+    }, [searchTerm])
     function clearData() {
         setExistInDb(false);
         setPagesData([]);
@@ -95,9 +103,8 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
         if (value) {
             db.getDB('manga-library')
                 ?.collection('titles').find({ 'title': new RegExp(value, 'i') }).then((mangaList: any) => {
-                    setLoading(false);
                     setMangaList(mangaList)
-                }).catch((error: any) =>
+                }).finally(() => setLoading(false)).catch((error: any) =>
                     notification['error']({
                         placement: 'bottomRight',
                         message: error.errorCodeName,
@@ -105,6 +112,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
                     })
                 )
         } else {
+            setLoading(false);
             setMangaList([]);
         }
     };
@@ -114,7 +122,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
     };
 
     const handleSubmit = () => {
-        const hide = message.loading('Action in progress..', 0);
+        const hide = message.loading('Fəaliyyət davam edir...', 0);
 
         const newChapter = {
             _id: new BSON.ObjectId(),
@@ -131,7 +139,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
                             message: 'Success',
                             placement: 'bottomRight',
                             description:
-                                'Chapter added!',
+                                'Fəsil əlavə edildi!',
                         });
                         clearData();
                     })
@@ -146,7 +154,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
     };
 
     const handleSearchChapter = () => {
-        const hide = message.loading('Action in progress..', 0);
+        const hide = message.loading('Fəaliyyət davam edir...', 0);
         db.getDB('manga-library')
             ?.collection('chapters').findOne({ mangaId: mangaId, number: сhapterNumber }).then((chapter: any) => {
                 setPagesData(chapter.pages);
@@ -162,7 +170,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
 
     }
     const handleDeleteChapter = () => {
-        const hide = message.loading('Action in progress..', 0);
+        const hide = message.loading('Fəaliyyət davam edir...', 0);
 
         db.getDB('manga-library')
             ?.collection('chapters').deleteOne({ mangaId: mangaId, number: сhapterNumber }).then(() => {
@@ -172,7 +180,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
                             message: 'Success',
                             placement: 'bottomRight',
                             description:
-                                'Chapter deleted!',
+                                'Fəsil silindi!',
                         });
                         clearData();
                     });
@@ -193,11 +201,11 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
                         loading={loading}
                         showSearch
                         style={{ width: 200 }}
-                        placeholder="Select manga"
+                        placeholder="Manqa seçin"
                         filterOption={false}
                         notFoundContent={null}
                         onChange={handleChange}
-                        onSearch={handleSearchTitle}
+                        onSearch={setSearchTerm}
                         value={mangaId}
                     >
                         {mangaList.map((d: any) => <Option key={d._id}>{d.title}</Option>)}
@@ -210,18 +218,23 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
 
                     <Upload accept={'.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel'}
                         {...uploadProps}>
-                        <Button icon={<UploadOutlined />}>Select exel file</Button>
+                        <Button icon={<UploadOutlined />}>Excel faylını seçin</Button>
                     </Upload>
 
                 </Col>
                 <Col offset={1} span={3}>
-                    <Button onClick={handleSearchChapter} type="default" disabled={fileList.length !== 0 || !сhapterNumber || !mangaId}>Load chapter</Button>
+                    <Button onClick={handleSearchChapter} type="default"
+                        disabled={
+                            fileList.length !== 0
+                            || !сhapterNumber
+                            || !mangaId}
+                    >Yükləmə fəsli</Button>
                 </Col>
                 <Col span={1}>
-                    <Button onClick={handleSubmit} type="primary" disabled={fileList.length === 0}>Save chapter</Button>
+                    <Button onClick={handleSubmit} type="primary" disabled={fileList.length === 0}>Fəsli saxla</Button>
                 </Col>
                 <Col span={1} offset={5}>
-                    <Button onClick={handleDeleteChapter} type="primary" danger disabled={!existInDb}>Delete chapter</Button>
+                    <Button onClick={handleDeleteChapter} type="primary" danger disabled={!existInDb}>Fəsli silin</Button>
                 </Col>
             </Row>
             <Image.PreviewGroup>

@@ -30,7 +30,7 @@ const MostRaited: React.FC<RouteComponentProps> = () => {
     } else {
         return (
             <div>
-                <Title level={2}>Most raited</Title>
+                <Title level={2}>Ən qiymətləndirilib</Title>
                 <Divider orientation="left"></Divider>
 
                 <Row gutter={16}>

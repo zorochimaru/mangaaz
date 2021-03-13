@@ -1,5 +1,5 @@
-import React, { CSSProperties, useMemo, useState } from 'react'
-import { Router } from '@reach/router';
+import { CSSProperties, useMemo, useState } from 'react'
+import { Redirect, Router } from '@reach/router';
 import './App.css'
 import { Layout } from 'antd';
 import Sidebar from './components/Sidebar';
@@ -58,7 +58,7 @@ function App() {
 
 
           <Header className='site-layout-background' style={{
-            zIndex:2,
+            zIndex: 2,
             padding: 0,
             height: 61,
             display: 'flex',
@@ -75,15 +75,19 @@ function App() {
               <Home path='/' />
               <MostRaited path='most-raited' />
               <PrivateRoute role={Roles.ADMIN} as={AdminPanel} path='admin-panel'>
+                <Redirect from="/" to="manga-controller" />
                 <MangaController path='manga-controller' />
                 <ChapterController path='chapter-controller' />
                 <UserController path='user-controller' />
               </PrivateRoute>
               <PrivateRoute role={Roles.MODERATOR} as={ModeratorPanel} path='moderator-panel'>
+                <Redirect from="/" to="manga-controller" />
+                <MangaController path='manga-controller' />
                 <ChapterController path='chapter-controller' />
               </PrivateRoute>
               <MangaDetails path='manga-details/:id' />
               <PrivateRoute role={Roles.READER} as={ReaderPanel} path='reader-panel'>
+                <Redirect from="/" to="statistics" />
                 <Statistics path='statistics' />
               </PrivateRoute>
               <MangaReader path={'manga-reader/:mangaId/:chapterId'} />
@@ -91,13 +95,13 @@ function App() {
           </Content>
 
 
-          <Footer style={{ textAlign: 'center' }}>Some useless Rasim ©</Footer>
+          <Footer style={{ textAlign: 'center' }}>No one right reserved ©</Footer>
         </Layout>
       </Layout >
     </UserContext.Provider>
   );
 }
- 
+
 const styles: { [key: string]: CSSProperties } = {
   mainWrapper: {
     display: 'flex',
