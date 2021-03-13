@@ -18,7 +18,7 @@ const ROUTES = [
     },
     {
         path: '/most-raited',
-        pathName: 'Ən çox qiymətləndirilib',
+        pathName: 'Ən qiymətləndirilib',
         icon: <StarOutlined />,
 
     }

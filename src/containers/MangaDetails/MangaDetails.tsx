@@ -1,4 +1,4 @@
-import { Link, navigate, RouteComponentProps } from '@reach/router'
+import { navigate, RouteComponentProps } from '@reach/router'
 import { Button, Col, Divider, Image, notification, Rate, Row, Space, Spin, Statistic } from 'antd';
 import React, { CSSProperties, useEffect, useState } from 'react'
 import { Manga } from '../../models/Manga.model';
@@ -18,13 +18,12 @@ Click on cover image go to last chapter
 Click on tag go to search page with same tag (Make search page)
 */
 const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
-    const [error, setError] = useState(null);
     const [isLoaded, setIsLoaded] = useState<boolean>(false);
     const [manga, setManga] = useState<Manga | null>(null);
-    const [mangaRating, setMangaRating] = useState<any>(null);
     const [averageScore, setAverageScore] = useState(0);
     const [currUserRate, setCurrUserRate] = useState(0);
     const [loadingRate, setLoadingRate] = useState(false);
+    const [continueButton, setContinueButton] = useState(false);
     const { user } = useUser();
     useEffect(() => {
         getDB('manga-library')
@@ -32,11 +31,20 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
                 setIsLoaded(true);
                 setManga(manga);
             }).catch(err =>
-                setError(err)
+                 Error(err)
             );
         fetchRating();
 
     }, [])
+    useEffect(() => {
+        getDB('progress-library')
+            .collection('lastReadedChapter')
+            .findOne({ mangaId: manga?._id.toHexString(), userId: user?.id }).then((result) => {
+                if (result) {
+                    setContinueButton(true)
+                }
+            });
+    }, [manga, user])
     function writeAvarageScoreToManga() {
         setLoadingRate(true);
         getDB('rating-library')
@@ -90,14 +98,13 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
         getDB('rating-library')
             .collection('titles').findOne({ mangaId: new BSON.ObjectId(props.id) }).then((mangaRating: any) => {
                 if (mangaRating) {
-                    setMangaRating(mangaRating);
                     const averageScore = (mangaRating.data.reduce((prev, curr) => +prev + +curr.rate, 0)
                         / mangaRating.data.length).toFixed(1);
                     setAverageScore(+averageScore);
                     setCurrUserRate(mangaRating.data.find(el => el.personId === user?.id ? el.rate : 0).rate);
                 }
             }).catch(err =>
-                setError(err)
+                Error(err)
             );
     }
     function onReadFirstChapter() {
@@ -140,13 +147,14 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
                         <Image style={styles.cover} src={manga?.coverUrl} alt={manga?.title} />
                         <Button onClick={onReadFirstChapter} type="primary" block>Birinci fəsli oxuyun</Button>
                         <Button onClick={onReadLastChapter} type="primary" block>Son Fəsli oxuyun</Button>
-                        <Button onClick={onContinue} type="primary" block>Davamlı oxuyun</Button>
+                        {continueButton ? <Button onClick={onContinue} type="primary" block>Davamlı oxuyun</Button> : null}
                     </Space>
                     <Divider orientation="left" plain>
                         Reytinq
                     </Divider>
-
-                    <Rate disabled={loadingRate} value={currUserRate} onChange={handleRateChange} className="rate" />
+                    <div style={{ width: '100%', textAlign: 'center' }}>
+                        <Rate disabled={loadingRate} value={currUserRate} onChange={handleRateChange} className="rate" />
+                    </div>
                     {loadingRate ? <Spin style={{ marginLeft: 10 }} /> : null}
                     <Divider orientation="left" plain>
                         Ümumi hesab

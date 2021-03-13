@@ -6,7 +6,7 @@ const MangaCard = (props) => {
         <Card
             actions={[
                 <Statistic title="Orta hesab" value={props.manga.rating} suffix="/ 5" />,
-                <Statistic title="Tərcümə olunmuş fəsillər" value={props.manga.chaptersCount} />
+                <Statistic title="Mövcud fəsillər" value={props.manga.chaptersCount} />
             ]}
             hoverable
             style={props.styles.card}

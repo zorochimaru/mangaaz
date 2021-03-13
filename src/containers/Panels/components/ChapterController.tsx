@@ -2,7 +2,7 @@ import { UploadOutlined } from "@ant-design/icons"
 import { RouteComponentProps } from "@reach/router"
 import { Upload, Button, Image, Select, InputNumber, Row, Col, notification, message } from "antd"
 import { Option } from "antd/lib/mentions";
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import * as XLSX from 'xlsx';
 import { ChapterPage } from "../../../models/ChapterPage.model";
 import * as db from '../../../config/db';
@@ -16,7 +16,15 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
     const [mangaList, setMangaList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [existInDb, setExistInDb] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('')
 
+    useEffect(() => {
+      const delayDebounceFn = setTimeout(() => {
+        handleSearchTitle(searchTerm);
+      }, 500)
+  
+      return () => clearTimeout(delayDebounceFn)
+    }, [searchTerm])
     function clearData() {
         setExistInDb(false);
         setPagesData([]);
@@ -95,9 +103,8 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
         if (value) {
             db.getDB('manga-library')
                 ?.collection('titles').find({ 'title': new RegExp(value, 'i') }).then((mangaList: any) => {
-                    setLoading(false);
                     setMangaList(mangaList)
-                }).catch((error: any) =>
+                }).finally(() => setLoading(false)).catch((error: any) =>
                     notification['error']({
                         placement: 'bottomRight',
                         message: error.errorCodeName,
@@ -105,6 +112,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
                     })
                 )
         } else {
+            setLoading(false);
             setMangaList([]);
         }
     };
@@ -197,7 +205,7 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
                         filterOption={false}
                         notFoundContent={null}
                         onChange={handleChange}
-                        onSearch={handleSearchTitle}
+                        onSearch={setSearchTerm}
                         value={mangaId}
                     >
                         {mangaList.map((d: any) => <Option key={d._id}>{d.title}</Option>)}

@@ -6,7 +6,7 @@ import Search from "antd/lib/input/Search";
 import TextArea from "antd/lib/input/TextArea";
 import { Option } from "antd/lib/mentions";
 import imageCompression from "browser-image-compression";
-import React, { CSSProperties, useState } from "react";
+import React, { CSSProperties, useEffect, useState } from "react";
 import { BSON } from "realm-web";
 import * as db from '../../../../config/db';
 import { Manga } from "../../../../models/Manga.model";
@@ -37,6 +37,18 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
   const [searchList, setSearchList] = useState<Manga[]>([]);
   const [main] = Form.useForm();
   const [searchForm] = Form.useForm();
+  const [searchTerm, setSearchTerm] = useState('')
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      handleSearch(searchTerm);
+    }, 500)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [searchTerm])
+
+
+
   const dummyRequest: any = ({ onSuccess }) => {
     setTimeout(() => {
       onSuccess("ok");
@@ -121,7 +133,11 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
   }
 
   function handleSearch(value: string) {
+    const timeout = setTimeout(() => {
+      //search function
+    }, 300);
     if (value) {
+
       db.getDB('options-library')
         ?.collection('genres').find({ 'value': new RegExp(value, 'i') }).then((genres: any) => {
           setGenresList(genres)
@@ -295,7 +311,8 @@ const MangaController: React.FC<RouteComponentProps | any> = () => {
                 showSearch
                 filterOption={false}
                 notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                onSearch={handleSearch}
+                // onSearch={handleSearch}
+                onSearch={setSearchTerm}
                 mode="multiple"
                 allowClear
                 style={{ width: '100%' }}
