@@ -16,7 +16,7 @@ import ChapterController from './containers/Panels/components/ChapterController'
 import MangaController from './containers/Panels/AdminPanel/pages/MangaController';
 import UserController from './containers/Panels/AdminPanel/pages/UserController';
 import ReaderPanel from './containers/Panels/ReaderPanel/ReaderPanel';
-import Statistics from './containers/Panels/ReaderPanel/pages/Statistics';
+import Settings from './containers/Panels/ReaderPanel/pages/Settings';
 import MangaReader from './containers/MangaReader/MangaReader';
 import MostRaited from './containers/MostRaited/MostRaited';
 
@@ -50,7 +50,8 @@ function App() {
           height: "100vh",
           position: "sticky",
           top: 0,
-          left: 0
+          left: 0, 
+          zIndex: 3
         }} collapsible collapsed={mode} onCollapse={() => setMode(!mode)}>
           <Sidebar />
         </Sider>
@@ -58,7 +59,7 @@ function App() {
 
 
           <Header className='site-layout-background' style={{
-            zIndex: 2,
+            zIndex: 3,
             padding: 0,
             height: 61,
             display: 'flex',
@@ -75,20 +76,21 @@ function App() {
               <Home path='/' />
               <MostRaited path='most-raited' />
               <PrivateRoute role={Roles.ADMIN} as={AdminPanel} path='admin-panel'>
-                <Redirect from="/" to="manga-controller" />
+
+                <Redirect noThrow={true} from="/" to="manga-controller" />
                 <MangaController path='manga-controller' />
                 <ChapterController path='chapter-controller' />
                 <UserController path='user-controller' />
               </PrivateRoute>
               <PrivateRoute role={Roles.MODERATOR} as={ModeratorPanel} path='moderator-panel'>
-                <Redirect from="/" to="manga-controller" />
+                <Redirect noThrow={true} from="/" to="manga-controller" />
                 <MangaController path='manga-controller' />
                 <ChapterController path='chapter-controller' />
               </PrivateRoute>
               <MangaDetails path='manga-details/:id' />
               <PrivateRoute role={Roles.READER} as={ReaderPanel} path='reader-panel'>
-                <Redirect from="/" to="statistics" />
-                <Statistics path='statistics' />
+                <Redirect noThrow={true} from="/" to="settings" />
+                <Settings path='settings' />
               </PrivateRoute>
               <MangaReader path={'manga-reader/:mangaId/:chapterId'} />
             </Router>

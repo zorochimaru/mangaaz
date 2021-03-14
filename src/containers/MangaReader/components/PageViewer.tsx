@@ -12,7 +12,8 @@ const PageViewer = (props) => {
         const style = {
             width: props.imageProps.pageWidth,
             height: props.imageProps.pageHeight,
-            objectFit: 'contain'
+            objectFit: 'contain',
+            // marginBottom: '20px'
         };
         return <img style={style} {...props.imageProps.imageProps} />
     }

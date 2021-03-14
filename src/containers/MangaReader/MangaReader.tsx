@@ -4,15 +4,16 @@ import { navigate, RouteComponentProps } from "@reach/router"
 import { useEffect, useState } from "react";
 import { getDB } from "../../config/db";
 import { Chapter } from "../../models/ChapterPage.model";
-import { Button, Drawer, notification, Select, Spin } from "antd";
-import { ColumnWidthOutlined, CommentOutlined, VerticalLeftOutlined } from "@ant-design/icons";
+import { Button, Drawer, Dropdown, Menu, notification, Select, Spin } from "antd";
+import { BarsOutlined, BulbOutlined, ColumnWidthOutlined, CommentOutlined, CopyOutlined, VerticalLeftOutlined } from "@ant-design/icons";
 import CommentsBar from './components/CommentsBar';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 import PageViewer from './components/PageViewer';
 import { PageContext, PageFactory } from '../../HOC/PageContext';
 import { BSON } from 'realm-web';
 import { useUser } from '../../HOC/AuthContext';
-
+import './MangaReader.css';
 
 // Move all styles to css or object
 
@@ -29,6 +30,7 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
     const [chapterNumber, setChapterNumber] = useState(0);
     const [chapterList, setChapterList] = useState<any>([]);
     const [sortType, setSortType] = useState('likes');
+    const [dark, setDark] = useState(false);
     const mangaSelectRef = useRef<any>('');
     const pageFactory = useMemo<PageFactory>(() => ({ page, setPage }), [page, setPage]);
     const { user } = useUser();
@@ -132,6 +134,47 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
             setLoading(false);
         }
     };
+    function onToggleLight() {
+        setDark(d => !d);
+    }
+    function onCopyLink() {
+
+        document.execCommand('copy');
+        notification.open({
+            message: 'Link kopyalandı',
+            placement: 'bottomRight',
+        });
+    }
+    const url = window.location.href;
+    const menu = (
+        <Menu>
+            <Menu.Item key="0">
+                <Button
+                    type="default"
+                    icon={<BulbOutlined />}
+                    size={'large'}
+                    style={{ marginRight: 10 }}
+                    onClick={onToggleLight}
+                />
+            </Menu.Item>
+
+            <Menu.Item key="1">
+                <CopyToClipboard text={url}>
+                    <Button
+                        type="default"
+                        icon={<CopyOutlined />}
+                        size={'large'}
+                        style={{ marginRight: 10 }}
+                        onClick={onCopyLink}
+                    />
+                </CopyToClipboard>
+
+
+            </Menu.Item>
+
+
+        </Menu>
+    );
 
     return (
         <PageContext.Provider value={pageFactory}>
@@ -139,6 +182,7 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
                 <div style={{
                     position: 'fixed',
                     top: 10,
+                    left: 200,
                     zIndex: 3,
                     display: 'flex',
                     alignItems: 'center',
@@ -154,7 +198,7 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
                     <Select
                         loading={loading}
                         showSearch
-                        style={{ width: 200 }}
+                        style={{ width: 90 }}
                         placeholder={chapter?.number}
                         filterOption={false}
                         notFoundContent={loading ? <Spin size="small" /> : null}
@@ -180,9 +224,20 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
                 <div style={{
                     position: 'fixed',
                     top: 10,
-                    right: 200,
+                    right: 160,
                     zIndex: 3
                 }}>
+                    <Dropdown overlay={menu} trigger={['click']}>
+
+                        <Button
+                            type="default"
+                            icon={<BarsOutlined />}
+                            size={'large'}
+                            style={{ marginRight: 10 }}
+                        />
+
+                    </Dropdown>
+
                     <Button
                         type="default"
                         icon={<CommentOutlined />}
@@ -205,14 +260,18 @@ const MangaReader: React.FC<RouteComponentProps | any> = (props) => {
                     </Select>
                     <CommentsBar sortType={sortType} firstPage={chapter?.pages[0]} />
                 </Drawer>
-
-                <div style={{ display: 'flex', width: '100%', textAlign: 'center', flexFlow: 'column wrap', rowGap: 20 }}>
+                <div className="wrapper" style={{ zIndex: 2, width: currView === 0 ? 'auto' : 'max-content' }}>
                     {chapter?.pages.map((page) => (
                         <PageViewer key={page.imgId} page={page} pageWidth={pageWidth} pageHeight={pageHeight} />
                     ))}
                 </div>
 
             </div>
+            <div style={{
+                background: 'rgba(0,0,0,.7)',
+                right: 0, left: 0, top: 0, bottom: 0, position: 'fixed', zIndex: dark ? 1 : -1
+            }}></div>
+
         </PageContext.Provider>
     )
 

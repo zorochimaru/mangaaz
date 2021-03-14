@@ -42,12 +42,21 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
                     message: err.errorCodeName,
                     description: err.message,
                 }));
-    }, [mangaId])
+    }, [mangaId]);
+    useEffect(() => {
+        getDB('progress-library')
+            .collection('lastReadedChapter')
+            .findOne({ mangaId: manga?._id.toHexString(), userId: user?.id }).then((result) => {
+                if (result) {
+                    setContinueButton(true)
+                }
+            });
+    }, [manga, user]);
     function writeAvarageScoreToManga() {
         setLoadingRate(true);
         getDB('rating-library')
             .collection('titles').findOne({ mangaId: new BSON.ObjectId(props.id) }).then((mangaRating: any) => {
-                if (mangaRating) {
+                if (mangaRating && mangaRating.data.length !== 0) {
                     const averageScore = +(mangaRating.data.reduce((prev, curr) => +prev + +curr.rate, 0)
                         / mangaRating.data.length).toFixed(1);
                     getDB('manga-library')
@@ -56,57 +65,83 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
                             $set: { rating: averageScore }
                         }).finally(() => setLoadingRate(false));
                 }
+
+                if (mangaRating && mangaRating.data.length === 0){
+                    getDB('manga-library')
+                    ?.collection('titles')
+                    .findOneAndUpdate({ _id: new BSON.ObjectId(props.id) }, {
+                        $set: { rating: 0 }
+                    }).finally(() => setLoadingRate(false));
+                }
             });
 
     }
     const handleRateChange = (rate) => {
         setLoadingRate(true);
-        getDB('rating-library')
-            ?.collection('titles')
-            .updateOne({
-                mangaId: new BSON.ObjectId(props.id),
-                "data.personId": user?.id
-            }, { $set: { "data.$.rate": rate } })
-            .then((res) => {
-                if (res.matchedCount === 0) {
-                    const newRate = {
-                        personId: user?.id,
-                        rate: rate
+        if (rate) {
+            getDB('rating-library')
+                ?.collection('titles')
+                .updateOne({
+                    mangaId: new BSON.ObjectId(props.id),
+                    "data.personId": user?.id
+                }, { $set: { "data.$.rate": rate } })
+                .then((res) => {
+                    if (res.matchedCount === 0) {
+                        const newRate = {
+                            personId: user?.id,
+                            rate: rate
+                        }
+                        getDB('rating-library')
+                            ?.collection('titles').updateOne({ mangaId: new BSON.ObjectId(props.id) }, {
+                                $addToSet: { data: newRate }
+                            }, { upsert: true }).finally(() => {
+                                writeAvarageScoreToManga();
+                                memoizefetchRating();
+                            });
                     }
-                    getDB('rating-library')
-                        ?.collection('titles').updateOne({ mangaId: new BSON.ObjectId(props.id) }, {
-                            $addToSet: { data: newRate }
-                        }, { upsert: true }).finally(() => {
-                            writeAvarageScoreToManga();
-                            memoizefetchRating();
-                        });
-                } else {
+                    if (res.matchedCount > 0) {
+                        writeAvarageScoreToManga();
+                        memoizefetchRating();
+                    }
+                }).finally().catch((error) => {
+                    notification['error']({
+                        placement: 'bottomRight',
+                        message: error.errorCodeName,
+                        description: error.message,
+                    });
+                });
+        } else {
+            getDB('rating-library')
+                ?.collection('titles')
+                .updateOne({
+                    mangaId: new BSON.ObjectId(props.id),
+                }, { $pull: { "data": { "personId": user?.id } } }).finally(() => {
                     writeAvarageScoreToManga();
                     memoizefetchRating();
-                }
-            }).finally().catch((error) => {
-                notification['error']({
-                    placement: 'bottomRight',
-                    message: error.errorCodeName,
-                    description: error.message,
                 });
-            });
+        }
+
     }
     function fetchRating() {
         getDB('rating-library')
             .collection('titles').findOne({ mangaId: new BSON.ObjectId(mangaId) }).then((mangaRating: any) => {
-                if (mangaRating) {
+                if (mangaRating && mangaRating.data.length !== 0) {
                     const averageScore = (mangaRating.data.reduce((prev, curr) => +prev + +curr.rate, 0)
                         / mangaRating.data.length).toFixed(1);
                     setAverageScore(+averageScore);
                     setCurrUserRate(mangaRating.data.find(el => el.personId === user?.id ? el.rate : 0).rate);
                 }
-            }).catch(err =>
+                if (mangaRating && mangaRating.data.length === 0) {
+                    setAverageScore(0);
+                    setCurrUserRate(0);
+                }
+            }).catch(err => {
                 notification['error']({
                     placement: 'bottomRight',
                     message: err.errorCodeName,
                     description: err.message,
-                }));
+                })
+            });
     }
     function onReadFirstChapter() {
         getDB('manga-library')
@@ -153,10 +188,10 @@ const MangaDetails: React.FC<RouteComponentProps | any> = (props) => {
                     <Divider orientation="left" plain>
                         Reytinq
                     </Divider>
-                    <div style={{ width: '100%', textAlign: 'center' }}>
+                    <div style={{ width: '100%', textAlign: 'center', position: 'relative' }}>
                         <Rate disabled={loadingRate} value={currUserRate} onChange={handleRateChange} className="rate" />
+                        {loadingRate ? <Spin style={{ position: 'absolute', right: '10px', top: '8px' }} /> : null}
                     </div>
-                    {loadingRate ? <Spin style={{ marginLeft: 10 }} /> : null}
                     <Divider orientation="left" plain>
                         Ümumi hesab
                     </Divider>

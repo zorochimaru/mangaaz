@@ -1,0 +1,5 @@
+.wrapper {
+  transform: translateX(-50%);
+  position: relative;
+  left: 50%;
+}

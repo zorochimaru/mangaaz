@@ -21,7 +21,7 @@ const Home: React.FC<RouteComponentProps> = () => {
     useEffect(() => {
         if (user) {
             db.getDB('manga-library')
-                .collection('titles').find({}, { limit: 4 }).then((mangaList: any[]) => {
+                .collection('titles').find({}, { limit: 4, sort: {lastUpdDate: -1} }).then((mangaList: any[]) => {
                     setMangaList(mangaList);
                 }).finally(() => setLoading(false)).catch(err =>
                     notification['error']({
@@ -49,7 +49,7 @@ const Home: React.FC<RouteComponentProps> = () => {
                             <Col span={6} key={manga._id.toHexString()} >
 
                                 <Link to={'manga-details/' + manga._id.toHexString()}>
-                                   <MangaCard styles={styles} manga={manga}/>
+                                    <MangaCard styles={styles} manga={manga} />
                                 </Link>
 
 

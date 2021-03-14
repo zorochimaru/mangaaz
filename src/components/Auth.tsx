@@ -30,7 +30,7 @@ const Auth: React.FC<any> = () => {
 
 
     function loginHandler(data: any) {
-        const hide = message.loading('Login in progress..', 0);
+        const hide = message.loading('Daxil oluruq', 0);
         const credentials = Realm.Credentials.google({ idToken: data.tokenId });
         RealmApp.logIn(credentials).then((res) => {
             const newUser: User = {

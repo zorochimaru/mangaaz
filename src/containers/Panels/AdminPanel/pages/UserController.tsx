@@ -169,8 +169,8 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
                     textToHighlight={text ? text.toString() : ''}
                 />
             ) : (
-                    text
-                ),
+                text
+            ),
     });
     function checkUser(user) {
         if (user.id === RealmApp.currentUser?.customData.id) {
@@ -220,7 +220,7 @@ const UserController: React.FC<RouteComponentProps | any> = () => {
 
     return (
         <div>
-            <Table onChange={
+            <Table rowKey="id" onChange={
                 (newPage: any) => fetchUsers(newPage)
             } pagination={pagination}
                 style={{ marginTop: 20 }} loading={loading} columns={columns} dataSource={userList} />

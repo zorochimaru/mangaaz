@@ -10,4 +10,5 @@ export interface Manga {
     ownerId: Object | undefined,
     rating: number,
     chaptersCount: number,
+    lastUpdDate: Date,
 }

@@ -19,11 +19,11 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
     const [searchTerm, setSearchTerm] = useState('')
 
     useEffect(() => {
-      const delayDebounceFn = setTimeout(() => {
-        handleSearchTitle(searchTerm);
-      }, 500)
-  
-      return () => clearTimeout(delayDebounceFn)
+        const delayDebounceFn = setTimeout(() => {
+            handleSearchTitle(searchTerm);
+        }, 500)
+
+        return () => clearTimeout(delayDebounceFn)
     }, [searchTerm])
     function clearData() {
         setExistInDb(false);
@@ -123,18 +123,17 @@ const ChapterController: React.FC<RouteComponentProps | any> = () => {
 
     const handleSubmit = () => {
         const hide = message.loading('Fəaliyyət davam edir...', 0);
-
-        const newChapter = {
-            _id: new BSON.ObjectId(),
-            mangaId: mangaId,
-            number: сhapterNumber,
-            pages: pagesData,
-        };
         db.getDB('manga-library')
-            ?.collection('chapters').insertOne(newChapter).then(() => {
+            ?.collection('chapters').updateOne({ number: сhapterNumber }, {
+                $set: {
+                    mangaId: mangaId,
+                    number: сhapterNumber,
+                    pages: pagesData,
+                }
+            }, { upsert: true }).then(() => {
                 db.getDB('manga-library')
-                    ?.collection('titles').updateOne({ mangaId: mangaId }, { $inc: { chaptersCount: 1 } }).then(() => {
-
+                    ?.collection('titles').updateOne({ _id: new BSON.ObjectId(mangaId) },
+                         { $inc: { chaptersCount: 1 }, $set: { lastUpdDate: new Date() } }).then(() => {
                         notification['success']({
                             message: 'Success',
                             placement: 'bottomRight',

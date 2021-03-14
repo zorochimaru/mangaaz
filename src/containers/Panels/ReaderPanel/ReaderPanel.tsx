@@ -1,9 +1,9 @@
-import { BarChartOutlined } from "@ant-design/icons";
+import { BellOutlined, SettingOutlined } from "@ant-design/icons";
 import { Link, Location } from "@reach/router";
 import { Divider, Menu } from "antd"
 import Title from "antd/lib/typography/Title"
-import React, { useState } from "react";
- 
+import { useState } from "react";
+
 /*
 TODOS
 ////////////////////////////////
@@ -18,9 +18,9 @@ interface Route {
 }
 const ROUTES: Route[] = [
     {
-        path: 'statistics',
-        pathName: 'Statistika',
-        icon: <BarChartOutlined />,
+        path: 'settings',
+        pathName: 'Parametrlər',
+        icon: <SettingOutlined />,
     }
 ]
 const ReaderPanel = (props: any) => {
